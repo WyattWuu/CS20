@@ -73,7 +73,8 @@ In case you can't see the images below, please check `Platform Setup Instruction
   pip install daphne
   pip install --upgrade attrs
   pip install --upgrade channels
-  pip install psycopg2 
+  pip install psycopg2
+  pip install miceforest
 ```
 - Check if the dependencies were installed using `pip list`
 
