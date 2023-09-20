@@ -94,6 +94,7 @@ In case you can't see the images below, please check `Platform Setup Instruction
 ## Final Steps
 - Make sure the directory is changed to `web` before executing the following (command prompt for Windows users):
 ```
+python delete_migrations.py
 python manage.py makemigrations	(ignore yellow warnings)
 python manage.py migrate	(if any errors come up regarding connections, PostGIS was not set up right)
 ```
