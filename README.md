@@ -1,12 +1,12 @@
 # PLATFORM SETUP INSTRUCTIONS
-Company Guidelines for Programming: https://drive.google.com/drive/folders/1zdl1Sj5JfqQgwdTPyQeEQtGngYgkfSun?usp=drive_link
-
+To understand the Company Guidelines for Programming, click [here][Guidelines]
 
 In case you can't see the images below, please check `Platform Setup Instructions` in the link above.
 
 [PostgreSQL]: https://www.postgresql.org/download/
 [Python]: https://www.python.org/downloads/release/python-3810/
 [Brew]: https://brew.sh/
+[Guidelines]: https://drive.google.com/drive/folders/1zdl1Sj5JfqQgwdTPyQeEQtGngYgkfSun?usp=drive_link
 
 ## Contents
 
@@ -22,6 +22,7 @@ In case you can't see the images below, please check `Platform Setup Instruction
 - [Installation Errors](#installation-errors)
   - [Errors installing requirements.txt](#errors-installing-requirementstxt)
   - [MacOS Installation Issues](#macos-installation-issues)
+  - [Windows GDAL Installation Issue](#windows-gdal-installation-issue)
 
 ## Install PostGIS Database
 - [Install the latest version of PostgreSQL][PostgreSQL]
@@ -122,3 +123,27 @@ In case you are having issues with particular packages:
 In case you are facing an issue installing gssapi
 - try fixing the missing GSSAPI_MAIN_LIB variable using the command: `export GSSAPI_MAIN_LIB=/System/Library/Frameworks/GSS.framework/Versions/Current/GSS`
 - Install Pillow package: `pip install Pillow==8.4.0`
+
+## Windows GDAL Installation Issue
+If installing gdal via pip either doesn't work or isnt recognized, doing the following will work on both Windows 10 and 11:
+- Run `pip debug --verbose` and look for compatible tags, e.g., cp38-cp38-win_amd64
+- Download the GDAL wheel from Christoph Gohlke's Unofficial Windows Binaries for Python Extension Packages. 
+- Use the tags found above to determine which wheel you download.
+- Install via pip install '/path/to/GDAL-3.3.3‑cp38-cp38-win_amd64.whl' (or whatever wheel it was you downloaded)
+- Navigate to `/path/to/venv/Lib/site-packages/osgeo/`and take note of the `gdalXXX.dll` files name e.g., `gdal304.dll`
+-The version name of the dll found above needs to be added to the `/path/to/venv/lib/site-packages/django/contrib/gis/gdal/libgdal.py` file here:
+```
+elif os.name == 'nt':
+    # Windows NT shared libraries
+    lib_names = ['gdal304', 'gdal300', 'gdal204', 'gdal203', 'gdal202', 'gdal201', 'gdal20']
+	# ^ add dll name to this array if its not there
+  ```
+Add the following code block to your django settings.py if it does not exists (within the main folder project folder, not site-packages) before the initialization of any packages:
+```
+if os.name == 'nt':
+    VENV_BASE = os.environ['VIRTUAL_ENV']
+    os.environ['PATH'] = os.path.join(VENV_BASE, 'Lib\\site-packages\\osgeo') + ';' + os.environ['PATH']
+    os.environ['PROJ_LIB'] = os.path.join(VENV_BASE, 'Lib\\site-packages\\osgeo\\data\\proj') + ';' + os.environ['PATH']
+```
+Finished! Now continue with the regular setup of django.
+Note: If there are still issues, it's possible you might need to install GDAL on windows. As there aren't any binaries available on the GDAL website and you have to build it yourself. The easiest way to install it is by using the network installer for OSGeo4W, just do an express installation but make sure to select GDAL as an additional package.
