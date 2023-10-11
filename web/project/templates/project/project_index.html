@@ -7,77 +7,67 @@
 {% endblock %}
 
 {% block extra_head %}
-
+<link rel="stylesheet" type="text/css" href="{% static 'project/css/django_autocomplete_light.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'project/css/project.css' %}"/>
 {% endblock %}
 
 {% block content %}
 
 {% csrf_token %}   
-<div id="flash-message" class="text-sm ms-4">
+<div id="flash-message" class="text-md ms-4">
     {% if messages %}
-    {% for message in messages %} 
+    {% for message in messages %}
     {% if message.level == 25 %}
-    <span
-    class="alert alert-success text-center p-2"> {{ message }}
-    </span>
+    <div
+    class="alert alert-success p-3"> {{ message }}
+    </div>
     {% endif %} {% endfor %} {% endif %}
 </div>
-    <div class="container-fluid content-margin-top-offest mb-4">
-        <div class="container">  
-            <div class="form-outline mb-4">
-                <h4 class="text-ofx-blue mb-4">Project Index<span class="ms-2 fa fa-project-diagram" ></h4>
-                <div class="row">
-                    <div class="col-12 my-3">
-                <div class="card shadow mb-2">
-                    {# Project Tab #}
-                    <div class="card-header">
-                        <div class="nav nav-tabs card-header-tabs" id="nav-tab" role="tablist">
-                            <a class="nav-link " id="nav-projects-tab" data-bs-toggle="tab"
-                               data-bs-target="#nav-projects" aria-controls="nav-projects" aria-selected="true">
-                                My Projects
-                            </a>
-                            <a class="nav-link" id="nav-tenements-tab" data-bs-toggle="tab"
-                               data-bs-target="#nav-tenements" aria-controls="nav-tenements" aria-selected="false">
-                                My Tenements
-                            </a>
-                            <a class="nav-link" id="nav-reports-tab" data-bs-toggle="tab"
-                               data-bs-target="#nav-reports" aria-controls="nav-reports" aria-selected="false">
-                                My Reports
-                            </a>
+    <div class="container-fluid mb-4 content-margin-top-offest">
+    <div class="container">
+    <h4 class="text-ofx-blue mb-2">Project Index<i class="ms-2 fas fa-fw fa-project-diagram"></i></h4>
+    <div id="title-divider" class="mb-4"></div>
+    <div class="form-outline mb-4">
+            <div class="row">
+                <div class="col-12 my-3">
+                    <div class="card shadow mb-2">
+                        {# Project Tab #}
+                        <div class="card-header">
+                            <div class="nav nav-tabs card-header-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-link " id="nav-projects-tab" data-bs-toggle="tab"
+                                   data-bs-target="#nav-projects" aria-controls="nav-projects" aria-selected="true">
+                                    My Projects
+                                </a>
+                                <a class="nav-link" id="nav-tenements-tab" data-bs-toggle="tab"
+                                   data-bs-target="#nav-tenements" aria-controls="nav-tenements" aria-selected="false">
+                                    My Tenements
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body tab-content overflow-auto" id="nav-tabContent">
                         {# Projects Tab #}
-                        <div class="tab-pane " id="nav-projects" role="tabpanel"
-                             aria-labelledby="nav-projects-tab">
+                        <div class="tab-pane " id="nav-projects" role="tabpanel" aria-labelledby="nav-projects-tab">
                             <table id="project-table" class="table table-sm dt-responsive w-100">
                                 <thead>
-                                <tr>
-                                    <th>State</th>
-                                    <th>Project Name</th>
-                                    <th>Permission</th>
-                                    <th>Date Created</th>
-                                    <th>Tenement(s)</th>
-                                    <th>File(s)</th>
-                                    <th>Disk Space Usage</th>
-                                    <th>Credits</th>
-                                    <th>Tags</th>
-                                    <th>
-                                        <span class="float-end" data-bs-toggle="modal"
-                                              data-bs-target="#createProjectModal">
-                                            <button class="btn btn-ofx-fa btn-ofx-green" data-bs-toggle="tooltip"
-                                                    data-bs-placement="left" title="New Project">
-                                                <span class="fa fa-plus"></span>
-                                            </button>
-                                        </span>
-                                    </th>
-                                </tr>
+                                    <tr>
+                                        <th>State</th>
+                                        <th>Project Name</th>
+                                        <th>Permission</th>
+                                        <th>Date Created</th>
+                                        <th>Tenement(s)</th>
+                                        <th>File(s)</th>
+                                        <th>Disk Space Usage</th>
+                                        <th>Credits</th>
+                                        <th>Tags</th>
+                                        <th></th>
+                                    </tr>
                                 </thead>
-
                                 <tbody>
                                 </tbody>
                             </table>
-                        </div>
+                            
+                        </div>                        
                         {# Tenements Tab #}
                         <div class="tab-pane" id="nav-tenements" role="tabpanel" aria-labelledby="nav-tenements-tab">
                             <table id="tenement-table" class="table table-sm dt-responsive w-100">
@@ -100,58 +90,38 @@
                                     </th>
                                 </tr>
                                 </thead>
-
                                 <tbody>
                                 </tbody>
                             </table>
+                            </div>                            
                         </div>
-                        {# Reports Tab #}
-                        <div class="tab-pane" id="nav-reports" role="tabpanel" aria-labelledby="nav-reports-tab">
-                            <table id="report-table" class="table table-sm dt-responsive w-100">
-                                <thead style="font-size:.85rem">
-                                <tr>
-                                    <th>Dataset</th>
-                                    <th>Project</th>
-                                    <th>Cleaner Report</th>
-                                    <th>Analysis Report</th>
-                                    <th>Type</th>
-                                    <th>
-                                        {# Since reports are created by other apps, we probably don't need this button #}
-                                        {#                                            <span data-bs-toggle="modal" data-target="#addReportModal">#}
-                                        {#                                                <button class="btn btn-sm btn-ofx-green float-right text-xs" data-bs-toggle="tooltip" data-bs-placement="left" title="Add Tenement">#}
-                                        {#                                                    <span class="fa fa-plus"/>#}
-                                        {#                                                </button>#}
-                                        {#                                            </span>#}
-                                    </th>
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
+                        {# END TABS #}
                     </div>
-                    {# END TABS #}
                 </div>
             </div>
         </div>
     </div>
-    </div>
 
     {# CREATE PROJECT MODAL #}
-    {% modalform id='createProject' title='Create Project' submit_text='Create' %}
-       {% csrf_token %} 
-       {{createProjectForm.as_p}} 
+    {% modalform id='createProject' title='Create Project' submit_text='Create'  %}
+       {% csrf_token %}
+       {{createProjectForm.as_p}}
     {% endmodalform %}
     {% modalform id='inviteUser' title='Invite Member' submit_text='Send Invite' dynamic="true" %}
         {% csrf_token %}
         <p>Invite a member to the project <b id="name"></b></p>
-        <p><i>Inviting non-registered users coming soon.</i></p>
+        {% comment %} <p><i>Inviting non-registered users coming soon.</i></p> {% endcomment %}
         {{ inviteUserForm.as_p }}
     {% endmodalform %}
 
     {% modalform id='addTenement' title='Add Tenement' submit_text='Add'%}
         {% csrf_token %}
+        <span
+        class="text-ofx-blue fa fa-question-circle"
+        data-bs-toggle="tooltip"
+        data-html="true"
+        title='Only unclaimed tenements will be shown'>
+        </span>
         {{ addTenementForm.as_p }}
     {% endmodalform %}
 
@@ -241,6 +211,7 @@
     </script>
     <script>
         $(document).ready(function () {
+            $("#addTenementModal").attr("data-bs-focus", "false")
 
             /*
             $('#project-table tbody').on('click', 'tr', function () {
@@ -256,13 +227,13 @@
                 { targets: [9], className: 'noowrap' }
                  ],
 
-  
+
                 'columns': [
                     {data: 'state', bSortable: true},
                     {
                         data: 'slug', bSortable: true,
                         render: function (data, type, row) {
-                            return `<a href=${data}>${row.name}</a>`
+                            return `${row.name} <a href="${data}"><button class="view-projects-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="View Project Dashboard">View</button></a>`
                         }
                     },
                     {data: 'permission', bSortable: true},
@@ -281,26 +252,43 @@
                     {
                         data: 'actions', bSortable: false,
                         render: function (data, type, row) {
-                            let action = (data > 7) ?
-                                `<td><span data-bs-toggle="modal" data-bs-target="#inviteUserModal">
-                                    <button class="btn btn-ofx-fa btn-ofx-fa-green" data-bs-toggle="tooltip"
-                                            data-bs-placement="bottom" title="Invite Member">
-                                        <span class="fa fa-user-plus"/>
-                                    </button></td><td>
-                                </span> <span data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
-                                    <button class="btn btn-ofx-fa btn-ofx-fa-red" data-bs-toggle="tooltip"
-                                            data-bs-placement="bottom" title="Delete Project">
-                                        <span class="fa fa-trash"/>
-                                    </button>
-                                </span></td>` :
-                                `<td><span data-bs-toggle="modal" data-bs-target="#leaveProjectModal">
-                                    <button class="btn btn-ofx-fa btn-ofx-fa-red" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Leave Project">
-                                        <span class="fa fa-user-alt-slash"/>
-                                    </button>
-                                </span></td>`;
 
+                            let action = (data > 7) ?
+                                `<div>
+                                    <button class="btn btn-ofx-fa dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <span class="fa fa-ellipsis-v"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <span class="dropdown-item" data-bs-toggle="modal" data-bs-target="#inviteUserModal">
+                                            <button class="btn btn-ofx-fa btn-ofx-fa-green" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Invite Member">
+                                                <span class="fa fa-user-plus"/>
+                                            </button>
+                                            Invite Member
+                                        </span>
+                                        <span class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+                                            <button class="btn btn-ofx-fa btn-ofx-fa-red" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete Project">
+                                                <span class="fa fa-trash"/>
+                                            </button>
+                                            Delete Project
+                                        </span>
+                                    </div>
+                                </div>
+                                ` :
+                                `<div>
+                                    <button class="btn btn-ofx-fa dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <span class="fa fa-ellipsis-v"></span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <span class="dropdown-item" data-bs-toggle="modal" data-bs-target="#leaveProjectModal">
+                                            <button class="btn btn-ofx-fa btn-ofx-fa-red" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Leave Project">
+                                                <span class="fa fa-user-alt-slash"/>
+                                            </button>
+                                            Leave Project
+                                        </span>
+                                    </div>
+                                </div>`;
                             return `<div class="float-end">${action}</div>`;
-                    }}
+                        }}
                 ],
                 ajax: {
                     url: "{% url 'project:get_projects' %}",
@@ -325,13 +313,15 @@
                     {
                         data: 'permit', bSortable: true,
                         mRender(permit) {
-                            return `<a href="${permit['slug']}">${permit['display']}</a>`
+                            return `${permit['display']} <a href="${permit['slug']}"><button class="view-projects-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="View Tenement Permit">View</button></a>`
+                            // return `<a href="${permit['slug']}">${permit['display']}</a>`
                         }
                     },
                     {
                         data: 'project', bSortable: true,
                         mRender(project) {
-                            return `<a href="${project['slug']}">${project['name']}</a>`
+                            return `<a>${project['name']}</a> <a href="${project['slug']}"><button class="view-projects-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="View Project Dashboard">View</button></a>`
+                            // return `<a href="${project['slug']}">${project['name']}</a>`
                         }
                     },
                     {data: 'status', bSortable: true},
@@ -441,7 +431,7 @@
           // Check for the modal parameter in the URL
           const urlParams = new URLSearchParams(window.location.search);
           const modalParam = urlParams.get('modal');
-         
+
           if (modalParam === 'True') {
             // Show the modal if the parameter is present
             $('#myModal').modal('show');
@@ -449,7 +439,7 @@
           setTimeout(function () {
             if( document.getElementById("flash-message") !== null)
             document.getElementById("flash-message").style.display = "none";
-          }, 3000); 
+          }, 3000);
 
           $('button[type="submit"]').on('click', function (event) {
             formId = event.target.form.id;
@@ -459,8 +449,8 @@
                 event.stopPropagation();
                 form.classList.add('was-validated');
                }
-           });  
+           });
         });
         </script>
-       
+
 {% endblock %}

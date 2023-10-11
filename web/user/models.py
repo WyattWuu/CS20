@@ -16,7 +16,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
-    credits = models.DecimalField(default=0.0, decimal_places=2, max_digits=65, validators=[validators.MinValueValidator(0.0)])
+    credits = models.DecimalField(default=0.0, decimal_places=2, max_digits=65,
+                                  validators=[validators.MinValueValidator(0.0)])
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -28,6 +29,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.full_name
-    
+
     def natural_key(self):
         return (self.email, self.username)

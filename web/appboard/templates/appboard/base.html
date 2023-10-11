@@ -10,8 +10,7 @@
     <meta name="author" content=""/>
     <link rel="shortcut icon" href="{% static 'website/images/favicon.ico' %}">
 
-    <script src="https://code.jquery.com/jquery-3.6.3.slim.min.js"
-            integrity="sha256-ZwqZIVdD3iXNyGHbSYdsmWP//UBokj2FHAxKuSBKDSo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -28,44 +27,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"/>
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
           rel="stylesheet"/>
+    {# CSS and JavaScript for Leaflet Draw #}  
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    {# CSS and JavaScript for Fullscreen #}
+    <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+
+     {# CSS and JavaScript for Layers Tree #}
+    <link rel="stylesheet" href="{% static 'interactive_map/css/L.Control.Layers.Tree.css' %}" />
+    <script src="{% static 'interactive_map/js/L.Control.Layers.Tree.js' %}"></script>
+    
     <link rel="stylesheet" type="text/css" href="{% static 'appboard/css/appboard.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'appboard/css/orefox.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'notification/css/notification.css' %}"/>
 
-    <title>{% block head_title %}{% endblock %} - OreFox</title>
+    <title>{% block head_title %}{% endblock %} - GeoDesk Ai</title>
 
     {% block extra_head %} {% endblock %}
 </head>
 
 <body class="m-0 p-0 ">
-{% include "appboard/sidebar.html" %}
 
-<div class="d-flex" style="margin-left: 15rem">
+<div id="main-content" class="d-flex">
     <div class="container-fluid m-0 p-0 ">
-        {% include "appboard/topbar.html" with breadcrumb=breadcrumb %}
-        <div class="p-4  h-100">
+        <div class = "sticky-top position-sticky">
+            {% include "appboard/sidebar.html" %}
+
+            {% include "appboard/topbar.html" with breadcrumb=breadcrumb %}
+        </div>
+
+        <div class="p-4  h-100" style="margin-left: 15rem; z-index: 0;">
             {% block content %}
             {% endblock %}
         </div>
     </div>
-    <footer class="swiper-slide-shadow-bottom bg-light text-dark footer fixed-bottom" >
-        <div class="container ">
-            <div class="copyright text-center  py-2">
-                <span class="fs-6">Copyright &copy; OreFox 2021</span>
-            </div>
-        </div>
-    </footer>
 </div>
+
+<footer class="fixed-bottom-new">
+    <div class="container">
+        <div class="copyright text-center py-2">
+            <span class="fs-6">Powered by OreFox AI &copy;</span>
+        </div>
+    </div>
+</footer>
+
 
 {#<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>#}
 {#<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js" ></script>#}
 <script type="text/javascript"
         src="https://cdn.datatables.net/v/bs5/jq-3.6.0/jszip-2.5.0/dt-1.13.1/b-2.3.3/b-colvis-2.3.3/b-html5-2.3.3/b-print-2.3.3/date-1.2.0/fc-4.2.1/fh-3.3.1/r-2.4.0/sl-1.5.0/datatables.min.js"></script>
-<script type="text/javascript" src="{% static 'appboard/js/appboard.js' %}"></script>
+<script defer type="text/javascript" src="{% static 'appboard/js/appboard.js' %}"></script>
 
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
         integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
+
+        
+<!-- Include Leaflet Draw JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
 
 <script src="{% static 'notification/js/notification.js' %}"></script>
 
@@ -92,8 +113,12 @@
         }
     });
 
-    {# Add the active class to whichever sidebar menu item is active #}
-    $(`#sidebar > nav > ul > li > a[href="{{ request.get_full_path }}"]`).closest('li').addClass('active');
+    {# Add the active class to whichever topbar menu item is active #}
+    $(`#topbar > div > ul > li > a[href="{{ request.get_full_path }}"]`).closest('li').addClass('active');
+
+    {# Add the active class to whichever sidebar sub menu item is active #}
+    $(`#sidebar > nav > ul > li > ul > li > a[href="{{ request.get_full_path }}"]`).closest('li').addClass('active');
+
 </script>
 </body>
 </html>

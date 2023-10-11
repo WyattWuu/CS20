@@ -60,7 +60,7 @@ class LMSViewTestCase(TestCase):
         self.project1 = Project.objects.create(**{
             'name': 'Owner Project',
             'owner': self.su,
-            'objective': 'owner test',
+            'purpose': 'owner test',
             'locality': 'someplace neat',
             'credits': 12345
         })

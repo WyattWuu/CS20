@@ -4,7 +4,7 @@ from django.urls import path, re_path, include
 from django.conf import settings
 from . import views
 from .utils import post
-from interactive_map import views as im_views
+import interactive_map.views.main as im_views
 
 app_name = 'tms'
 
@@ -22,8 +22,9 @@ urlpatterns = [
     path(PERMIT_PATH + 'get/test_form/', views.test_form, name='get_test_form'),
 
     # Project Map Views
-    path(PERMIT_PATH + 'get/tenement_map/', im_views.get_tenement_map, name='get_tenement_map'),
-    path(PERMIT_PATH + 'get/tenements_json/', im_views.get_tenements_json, name='get_tenements_json'),
+    path(PERMIT_PATH + 'get/tenement_map/', views.get_tenement_map, name='get_tenement_map'),
+    # path(PERMIT_PATH + 'get/tenements_json/', im_views.get_tenements_json, name='get_tenements_json'),
+    # path(PERMIT_PATH + 'get/tenements_geojson/', im_views.get_tenements_geojson, name='get_tenements_geojson'),
     
     # Post Requests
     path(PERMIT_PATH + 'post/claim/', post.claim_tenement, name='claim_tenement'),
@@ -36,7 +37,7 @@ urlpatterns = [
 
     path(PERMIT_PATH + 'post/target/add/', post.add_target, name='add_target'),
     path(PERMIT_PATH + 'post/target/delete/', post.delete_target, name='delete_target'),
-    path(PERMIT_PATH + 'post/target/modify/', post.modify_target, name='modify_target'),
+    path(PERMIT_PATH + 'post/target/edit/<str:target_name>', post.edit_target, name='edit_target'),
 
     path(PERMIT_PATH + 'post/workload/add/', post.add_workload, name='add_workload'),
     path(PERMIT_PATH + 'post/workload/delete/', post.delete_workload, name='delete_workload'),
@@ -45,4 +46,10 @@ urlpatterns = [
     path(PERMIT_PATH + 'post/workload/receipt/<str:work_program>/add/', post.add_workload_receipt, name='add_workload_receipt'),
 
     path(PERMIT_PATH + 'json/', views.as_json, name='as_json'),
+    path(
+        'tenement-autocomplete/',
+        views.TenementAutocomplete.as_view(create_field='permit_number', validate_create=True),
+        name='tenement-autocomplete',
+    ),
+
 ]

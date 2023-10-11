@@ -2,13 +2,13 @@ styles = {
   project:
   {
     weight: 2,
-    fillOpacity: 0.2,
-    color: "#666666"
+    fillOpacity: 0.05,
+    color: '#8f8d8d'
   },
   normal: {
     weight: 2,
     fillOpacity: 0.5,
-    color: "#a6b6cd"
+    color: "#5c749e"
   },
   selected: {
     weight: 2,
@@ -61,7 +61,7 @@ function generateOwnerParcelsMap(map, parcelsFeature) {
       },
       // Zoom to Tenement when it is clicked
       click: function (e) {
-          // lot_map.fitBounds(e.target.getBounds());
+          // parcels_map.fitBounds(e.target.getBounds());
   
           
       },

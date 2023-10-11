@@ -210,66 +210,6 @@ function populate_Activity_Unit_Quantity_Dropdown() {
              
   $("#id_discipline").change(populate_Activity_Unit_Quantity_Dropdown)
 
-// $('#addTargetForm').on('submit', function (e) {
-//     e.preventDefault();
-//     let $form = $(this);
-//     let $table = $('#target-table');
-//     let $modal = $form.closest('.modal');
-
-//     $.ajax({
-//         type: 'POST',
-//         url: location.origin + location.pathname + `post/target/add/`,
-//         data: $form.serialize(),
-//         success: function (response) {
-//             var marker = L.marker(response.data.location.split(" "))
-//             var intersected_tenement = get_intersected_tenements(response.project_tenements, marker.toGeoJSON(), L.geoJson(response.tenement_data))
-//             if (Object.keys(intersected_tenement).length !== 0)
-//                         response.data.permit.slug = intersected_tenement.slug
-//                         response.data.permit.type = intersected_tenement.type
-//                         response.data.permit.number = intersected_tenement.number
-
-//             $table.DataTable().row.add(response.data).draw();
-//             $modal.modal('hide');
-//             $form.resetForm();
-//             location.reload()
-//             $('#tenement_map_box').load(location.origin + location.pathname + `get/tenement_map/`);
-           
-//         },
-//         error: function (response) {
-//             $form.displayFormErrors(response['responseJSON']);
-//             //location.reload();
-//         }
-//     });
-// });
-// $('#deleteTargetForm').on('submit', function (e) {
-//     e.preventDefault();
-//     let $form = $(this);
-//     let $table = $('#target-table');
-//     let $modal = $form.closest('.modal');
-//     let tableRow = $table.DataTable().row($form.attr('row-index'));
-
-//     let formData = new FormData($form[0]);
-//     formData.set('name', tableRow.data()['name']);
-
-//     $.ajax({
-//         type: 'POST',
-//         url: location.origin + location.pathname + `post/target/delete/`,
-//         data: formData,
-//         processData: false,
-//         contentType: false,
-//         success: function () {
-//             tableRow.remove().draw();
-//             $modal.modal('hide');
-//             $form.resetForm();
-//             location.href = '#';
-//             location.reload()
-//             $('#project_map_box').load(location.origin + location.pathname + `get/project_map/`);
-//         },
-//         error: function (response) {
-//             $form.displayFormErrors(response['responseJSON']);
-//         }
-//     });
-// });
 
 $('#createTaskForm').on('submit', function (e) {
     e.preventDefault();

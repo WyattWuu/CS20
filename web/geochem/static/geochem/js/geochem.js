@@ -272,9 +272,8 @@ const datasetFiles = new DataTransfer();
 
 
 $(document).ready(function () {
-  
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        alert("tab2")
+       
         $($.fn.dataTable.tables(true)).DataTable()
             .columns.adjust();
     });
@@ -492,13 +491,10 @@ $('input[type="checkbox"][data-action="selectAll"] > .selectOne').on('click', fu
     let allCheckBox = true;
   
     let checkState = $(this).prop("checked");
-    console.log("comes",checkState)
     if(checkState){
-        console.log("comes true")
   
         $(this).closest('table').find('input[type="checkbox"][data-action="selectOne"]').each(function () {
             if($(this).prop('checked') == false){
-                console.log("comes false all")
   
                  allCheckBox = false
             }
@@ -506,7 +502,6 @@ $('input[type="checkbox"][data-action="selectAll"] > .selectOne').on('click', fu
         $('input[type="checkbox"][data-action="selectAll"]').prop('checked', allCheckBox)
     }
     else{
-        console.log("comes false")
   
         $('input[type="checkbox"][data-action="selectAll"]').prop('checked', False)
     }
@@ -633,7 +628,6 @@ $('#uploadForm').submit(function (e) {
               });
               
             indexCol = response.indexCol
-            console.log("response",response.merged.length, response.columns.length)
             $('meta[name="pid"]').attr('content', response.pid)
              /* Populate all the dataclean tables */
             $('#mergedData').DataTable({
@@ -671,7 +665,6 @@ $('#uploadForm').submit(function (e) {
             }).draw();
 
             // ensures column types are displayed to user in simple english in data cleaning phase
-            console.log("missing",missingJSON)
 
             typesJSON.forEach((obj) => {
                 obj.data = (obj.data == 'float32' || obj.data == 'float64' || obj.data == 'int32' || obj.data == 'int64') ? 'Number' : 'Text';
@@ -761,7 +754,6 @@ $('#getExistingDatasetsForm').submit(function (e) {
                     datasetTable.DataTable().row.add({
                         'dataset': filteredDataSet
                     }).draw();
-                    console.log("dataset", dataset)
                 }
 
                 /* Reset the form and hide the modal */
@@ -815,16 +807,18 @@ $(document).on('click', 'form[data-form-group="datacleanMethod"] #btnCancel,form
     let includeForm = e.target.parentNode.parentNode.querySelector("input.include");
     
     cardId = includeForm.id.slice(7)
-    console.log("card1",cardId)
     $(`label[for=${cardId}] .card-header`).removeClass("functionIncluded")
     $(`label[for=${cardId}] .card-header`).addClass("functionNotIncluded")
     $(`label[for=${cardId}] .card`).removeClass("borderfunctionIncluded")
     $(`label[for=${cardId}] .card`).addClass("borderfunctionNotIncluded")
     includeForm.value = "0"
-    console.log("cancel",includeForm)
-   
-    
 });
+
+$(document).on('click', 'form[data-form-group="dataAnalysisMethod"] #btnCancel', function (e) {
+    if ($('input.include[value="1"]').length == 0) {
+        $('#submitDataAnalysis').attr('disabled', true)
+    }
+})
 
 $(document).on('click', 'form[data-form-group="datacleanMethod"] #btnSubmit,form[data-form-group="dataAnalysisMethod"] #btnSubmit', function (e) {
     let includeForm = e.target.parentNode.parentNode.querySelector("input.include");
@@ -836,12 +830,15 @@ $(document).on('click', 'form[data-form-group="datacleanMethod"] #btnSubmit,form
     
     $(`label[for=${cardId}] .card`).removeClass("borderfunctionNotIncluded")
     $(`label[for=${cardId}] .card`).addClass("borderfunctionIncluded")
+});
+
+$(document).on('click', 'form[data-form-group="dataAnalysisMethod"] #btnSubmit', function (e) {
+    $('#submitDataAnalysis').attr('disabled', false)
   //  $(this).attr("data-bs-dismiss","modal")
    // $(this).click()
   // $(this).parents(".modal").removeClass("show")
  //  $(this).parents(".modal").css("display","none")
   // e.target.parentNode.parentNode.parentNode.parentNode.parentNode.style.display="none"
-    console.log("submitss", $(this).parents(".modal"))
 
    // e.target.parent.modal('toggle')
 });
@@ -870,8 +867,6 @@ let filename;
 let cleanerReport;
 
 let cleanerFile;
-var cleaningMethods = [$("#remove_empty_entries"), $("#convert_uniform_units"), $("#remove_comma_sep"), 
-$("#handle_inequalities"), $("#remove_non_numeric"), $("#remove_entries"), $("#remove_columns")];
 // checks to see if any cleaning methods have been selected
 var anyCleaningSelected = false;
 $('#datacleanForm').submit(function (e) {
@@ -887,7 +882,6 @@ $('#datacleanForm').submit(function (e) {
     formData.append('pid', $('meta[name="pid"]').attr('content'));
     formData.append('index_col', indexCol);
 
-   console.log("indexcol",indexCol)
    /* datacleanForm.find('input[type="checkbox"]:checked').each(function () {
         console.log("eeeee1",e,"this1",$(this))
      
@@ -993,13 +987,11 @@ $('#datacleanForm').submit(function (e) {
         },
         error: function (data) {
             /* TODO: Show some errors if the data was bad */
-            console.log("data1",data)
             if(data.responseJSON){
                 if ("error_message" in data.responseJSON) {
                     if(data.responseJSON.error_message == "object of type 'NoneType' has no len()" || 
                     data.responseJSON.error_message =="'NoneType' object is not subscriptable"
                     ){
-                        console.log("done")
                         $('#error_modal_text').html("No Columns Selected")}
                     else    
                     $('#error_modal_text').html(data.responseJSON.error_message)
@@ -1074,7 +1066,6 @@ $('#dataAnalysisForm').submit(function (e) {
             </a>
             `);
            
-            console.log("jsurl",data.cleaner_file)
             next_tab();
         },
         error: function (data) {

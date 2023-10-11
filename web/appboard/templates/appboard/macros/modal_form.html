@@ -2,7 +2,7 @@
 
 <div class="modal fade" id="{{ id }}Modal" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true"
      {% if static %}data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}>
-    <div class="modal-dialog">
+    <div class="modal-dialog {% if size and size != 'sm' %}modal-{{ size }}{% else %}modal-md{% endif %}">
         <form id="{{ id }}Form" method="{{ method }}" action="{{ action }}" enctype="{{ enctype }}"
             {% for key, value in kwargs.items %}data-form-{{ key }}="{{ value }}"{% endfor %}>
             <div class="modal-content">

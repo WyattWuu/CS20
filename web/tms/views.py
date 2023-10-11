@@ -1,12 +1,14 @@
 from http import HTTPStatus
-
+import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.db.models import QuerySet
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers import serialize
 
-from interactive_map import views as im_views
 from main.utils.query_analyze import django_query_analyze
 from media_file.models import MediaFile
 from project.forms import CreateTaskForm
@@ -17,8 +19,9 @@ from tms.forms import ClaimTenementForm, CreateWorkProgramForm, WorkProgramRecei
 from tms.models.models import WorkProgram
 from tms.utils import scraper
 from main.utils.fields import ChoicesLabelCase
+from dal import autocomplete
 
-from interactive_map import views as im_views
+from project.models import Project
 
 User = get_user_model()
 
@@ -26,6 +29,60 @@ User = get_user_model()
 def home(request):
     return HttpResponse("App Homepage")
 
+class TenementAutocomplete(autocomplete.Select2QuerySetView):
+    """
+        Provides tenments for autocomplete widget, and tenement creation functionality.
+    """
+    def post(self, text):
+        """
+            Function to create new tenement if an existing one with the given paramters do not exist. Returns permit id and name.
+        """
+        permit_type = self.forwarded.get('permit_type', None)
+        permit_state = self.forwarded.get('permit_state', None)
+        permit_number = int(self.request.POST.get("text", -1))
+
+        if permit_number < 0:
+            return JsonResponse(data={"error":"Invalid permit number"})
+
+        try:
+            tenement = Tenement.objects.get(permit_state=permit_state, permit_type=permit_type, permit_number=permit_number)
+        except ObjectDoesNotExist:
+            try:
+                tenement, was_created = scraper.scrape_tenement(permit_state, permit_type, permit_number)
+            except:
+                return JsonResponse(data={"error": "Search Failed"})
+
+        
+        if not tenement:
+            return JsonResponse(data={"error": "Permit not found"})
+
+        return JsonResponse(data={"id": tenement.pk, "text": tenement.permit_id})
+
+
+    def get_result_label(self, item):
+        """
+            Return name for search results in widget
+        """
+        return str(item.permit_id) + ": " + item.ahr_name
+
+    def get_selected_result_label(self, item):
+        """
+            Return name for selected result in widget
+        """
+        return str(item.permit_id)
+
+    def get_queryset(self):
+        """
+            Return queryset for permits without an assigned project based on permit number and holder name, 
+        """
+        permit_type = self.forwarded.get('permit_type', None)
+        
+        tenmentSearchSet = Tenement.objects.filter(permit_type=permit_type, project=None)
+
+        if self.q:
+            tenmentSearchSet = tenmentSearchSet.filter(Q(permit_number__istartswith=self.q) | Q(ahr_name__icontains=self.q))
+
+        return tenmentSearchSet
 
 @login_required
 def dashboard(request, permit_state, permit_type, permit_number):
@@ -80,23 +137,31 @@ def get_file(request, tenement, permit_state, permit_type, permit_number, file_u
     # TODO: This func has been implemented on the project, i dont believe its necessary here need to check
     return JsonResponse({}, status=HTTPStatus.NOT_IMPLEMENTED)
 
+@login_required
+def get_tenement_map(request, permit_state, permit_type, permit_number):
+    """Returns the tenement in JSON format that the requesting user is a member of
+        along with the html of the tenement map.
+    """
+    tenement = {'permit_state': permit_state,
+                'permit_type': permit_type,
+                'permit_number': permit_number,}
+    # Send it off
+    return render(request, "tms/tenement_map.html", {'tenement':tenement}, content_type='application/json')
 
 @has_project_permission()
 def get_targets(request, tenement, permit_state, permit_type, permit_number):
-    targets = tenement.project.targets.all()
-
-    context = {
-        'targets': [{
+    targets = tenement.project.targets.filter(
+            area__intersects=tenement.area_polygons
+            )
+    targets_list = [{
             'name': target.name,
             'description': target.description,
             'location': target.location,
             'actions': None,
-        } for target in targets],
-        'tenement': permit_type + " " + permit_number,
-        'tenement_data': im_views.get_tenements_data(),
-    }
-
-    return JsonResponse(context, status=HTTPStatus.OK)
+        } for target in targets]
+    
+    print('targets', targets_list)
+    return JsonResponse({'data': targets_list}, status=HTTPStatus.OK)
 
 
 @has_project_permission()

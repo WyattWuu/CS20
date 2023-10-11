@@ -5,6 +5,54 @@ owner.html
 id=HISTORY_DROPDOWN_CONTENT
 {% endcomment %} -->
 
+{% block extra_head %}
+<style>
+    .history .card-footer {
+        background-color: transparent;
+        
+        
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+
+    .history .card-footer button {
+        border: 0;
+        border-radius: 5px;
+        
+        padding: 2px;
+        
+        background-color: transparent;
+        color: gray;
+    }
+
+    .history .card-footer button:hover {
+        background-color: gainsboro;
+    }
+
+    .history .history-from {
+        text-decoration: line-through;
+        color: gray;
+
+        border-radius: 2px;
+        background-color: gainsboro;
+
+        padding: 1px;
+    }
+
+    .history .history-to {
+        border-radius: 2px;
+
+        padding: 1px;
+    }
+
+    .history .history-to.created {
+        background-color: rgb(156, 172, 255);
+    }
+</style>
+{% endblock %}
+
 {% if view.instance %}
     {% with view.instance as history %}
     <ul>

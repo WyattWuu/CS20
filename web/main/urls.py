@@ -37,6 +37,7 @@ urlpatterns = [
     path('project/', include('project.urls'), name='project'),
     path('lms/', include('lms.urls'), name='lms'),
     path('nms/', include('native_title_management.urls'), name='nms'),
+    path('kms/', include('knowledge_management_system.urls'), name='kms'),
     path('tms/', include('tms.urls'), name='tms'),
     path('user/', include('user.urls'), name='user'),
     path('interactive_map/', include('interactive_map.urls'), name='interactive_map'),
@@ -47,6 +48,7 @@ urlpatterns = [
     path('media_file/', include('media_file.urls'), name='media_file'),
 
     path('notification/', include('notification.urls'), name='notification'),
+    path('data_catalogue/', include('data_catalogue.urls'), name='data_catalogue'),
 ]
 
 if settings.DEBUG:

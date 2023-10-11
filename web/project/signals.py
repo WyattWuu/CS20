@@ -5,9 +5,8 @@ from django.db import models
 from django.dispatch import receiver
 
 from django.db.models.signals import post_save, pre_delete
-from . import models as ProjectModels
 
-#from project_management.models import Board
+from . import models as ProjectModels
 
 
 @receiver(models.signals.pre_delete, sender=Project)
@@ -40,47 +39,3 @@ def auto_delete_file_on_m2m_changed(sender, instance, action, model, **kwargs):
     if action == 'post_clear':
         instance.delete()
 
-# @receiver(post_save, sender=ProjectModels.Project)
-# def set_category(sender, instance, created, **kwargs):
-#     if created:
-#
-#         data = {
-#             'title': instance.name,
-#             'description': 'title',
-#             'is_global': True,
-#             'is_private': True,
-#             'users': [instance.owner],
-#             'project_id': instance.id
-#         }
-#         categoryForm = CategoryForm(data)
-#         if (categoryForm.is_valid()):
-#             categoryForm.save()
-
-# @receiver(post_save, sender=ProjectModels.ProjectMember)
-# def add_category_memeber(sender, instance, created, **kwargs):
-#     if created:
-#         category = Category.objects.get(project_id=instance.project.pk)
-#
-#         category.users.add(instance.user.id)
-#
-# @receiver(pre_delete, sender=Project)
-# def delete_category(sender, instance, **kwargs):
-#     category = Category.objects.filter(project_id=instance.pk)
-#     category.update(is_removed=True)
-
-
-"""
-@receiver(post_save, sender=models.Project)
-def set_board(sender, instance, created, **kwargs):
-    if created:
-        # now save the board table
-        Board.objects.create(name=instance.name, owner=instance.owner)
-"""
-
-# @receiver(post_save, sender=ProjectModels.ProjectMember)
-# def add_category_memeber(sender, instance, created, **kwargs):
-#     if created:
-#         print("OK")
-#         category = Category.objects.get(project_id=instance.project.pk)
-#
-#         category.users.add(instance.user.id)

@@ -39,7 +39,7 @@ class ModalNode(Node):
 
 
 class ModalFormNode(Node):
-    def __init__(self, nodelist, id, title, size='lg', action='', method='', enctype='', cancel_text='Cancel', submit_text='Submit', submit_type='submit', submit_class='btn-ofx-green', btn_type="submit", **kwargs):
+    def __init__(self, nodelist, id, title, size='sm', action='', method='', enctype='', cancel_text='Cancel', submit_text='Submit', submit_type='submit', submit_class='btn-ofx-green', btn_type="submit", **kwargs):
         """
         Parameters
         ----------
@@ -65,6 +65,7 @@ class ModalFormNode(Node):
             'id': id,
             'title': title,
             'size': size,
+            'method': method,
             'action': action,
             'enctype': enctype,
             'cancel_text': cancel_text,

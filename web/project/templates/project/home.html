@@ -1,9 +1,11 @@
 {% extends 'appboard/base.html' %}
 
 {% block content %}
-    <div class="container-fluid">
-        <h3 class = "text-ofx-blue px-4 py-4">Project Index <span class="fa fa-project-diagram"/></h3>
-        <div class="row">
+    <div class="container-fluid mb-4 content-margin-top-offest">
+        <div class="container">
+            <h4 class="text-ofx-blue mb-2">Create a New Project<i class=" ms-2 fas fa-fw fa-chart-line"></i></h4>
+            <div id="title-divider" class="mb-4"></div>
+            <div class="row">
                     <div class="col-12">
                         <div class="card shadow mb-2">
                         {# Project Tab #}
@@ -96,10 +98,10 @@
                         </div>
                     </div>
                 </div>
-
+        </div>
     </div>
 {% endblock %}
-
+s
 {% block extra_body %}
     <script>
         $(document).ready(function () {

@@ -9,7 +9,7 @@
 
 {% if view.instance %}
 {% with view.instance as owner %}
-    <div id="OWNER_BAR" class="owner-main-bar" data-url="{% url 'lms:owner' slug=view.project.slug owner=owner.id %}">
+    <div id="OWNER_BAR" class="owner-main-bar d-flex flex-md-row flex-column-reverse" data-url="{% url 'lms:owner' slug=view.project.slug owner=owner.id %}">
         <div style="word-break: break-all;">
            <div class="d-flex">
             <h4 class= "text-ofx-blue fw-bold"> 
@@ -20,7 +20,7 @@
                 {% endif %}
             </h4></div>
         </div>
-        <div class="d-flex flex-row align-items-center justify-content-between">
+        <div class="d-flex flex-row align-items-center justify-content-end">
             
             <div id="REMINDERS_VIEW" class="dropdown me-3" data-url="{% url 'lms:reminders' slug=view.project.slug owner=owner.id %}" 
             data-container="reminders" >
@@ -37,7 +37,12 @@
                 </button>
                 <div class="reminders-dropdown-menu dropdown-menu" aria-labelledby="remindersDropdownMenuButton" >
                     <span class="dropdown-header d-flex flex-row align-items-center flex-wrap justify-content-between">
-                        Reminders {{owner.reminder_count}}
+                        <span>
+                            Reminders {{owner.reminder_count}}
+                            <div id="reminders_progress" class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </span>
                         {% if view.project|is_write:view.member %}
                         <button class="btn-clear-hover border border-1" data-bs-toggle="modal" data-bs-target="#newReminderModal" data-action="new"
                         data-url="{% url 'lms:reminders' slug=view.project.slug owner=owner.id %}">
@@ -63,7 +68,12 @@
                 </button>
                 <div class="dropdown-menu files-dropdown-menu">
                     <span class="dropdown-header d-flex flex-row align-items-center flex-wrap justify-content-between">
-                        Files {{owner.file_count}}
+                        <span>
+                            Files {{owner.file_count}}
+                            <div id="files_progress" class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </span>
                         {% if view.project|is_write:view.member %}
                         <button class="btn-clear-hover border border-1" data-bs-toggle="modal" data-bs-target="#newFileModal" data-action="new"
                         data-url="{% url 'lms:files' slug=view.project.slug owner=owner.id %}">
@@ -94,7 +104,11 @@
                 <div id="correspondence_dropdown_menu" class="correspondence-dropdown-menu dropdown-menu">
                     
                     <div class="dropdown-header d-flex flex-row align-items-center flex-wrap justify-content-between">
-                        Correspondence
+                        <span>Correspondence 
+                            <div id="correspondence_progress" class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </span>
                         {% if view.project|is_write:view.member %}
                         <button class="btn-clear-hover border border-1" data-bs-toggle="modal" data-bs-target="#newCorrespondenceModal" data-action="new"
                             data-url="{% url 'lms:correspondences' slug=view.project.slug owner=owner.id %}">Attach Correspondence
@@ -120,7 +134,12 @@
                 </button>
                 
                 <div id="history_dropdown_menu" class="history-dropdown-menu dropdown-menu">
-                    <p class="dropdown-header">History</p>
+                    <span class="dropdown-header">
+                        History
+                        <div id="history_progress" class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </span>
                     <div id="HISTORY_DROPDOWN_CONTENT" class="history custom-dropdown-content" data-container-content="history">
                         <!-- history.html -->
                     </div>
@@ -172,7 +191,7 @@
     </div>
     <div class="info-main">
         <div id="OWNER_DETAILS_VIEW" class="info-info owner-form-data row">
-            <div class="col-md-4 col-sm-12 ">
+            <div class="col-lg-5 col-md-6 col-sm-12 ">
                 <span hidden data-field="title" data-value="{{ owner.title }}" >{% if owner.title %}{{ owner.get_title_display }}{% endif %}</span>
                 <div class="d-flex justify-content-between" data-field="first_name" data-value="{{ owner.first_name }}">
                     <span class="fw-bold me-2">First Name</span><span class="col-8"> {{ owner.first_name }}</span></div>
@@ -195,7 +214,7 @@
                 <span class="fw-bold me-2">Email Address</span><span class="col-8">  {{ owner.contact_email }}</span> </div>
             </div>
           
-            <div class="col-md-5 col-sm-12 ">
+            <div class="col-lg-5 col-md-6 col-sm-12 ">
                 <div class="d-flex justify-content-between" data-field="address_street"
                 {% if owner.address_street %} data-value="{{ owner.address_street }}"{% endif %}>
                 <span class="fw-bold ">Street Address </span><span class="col-8"> {{ owner.address_street }}</span></div>
@@ -237,21 +256,21 @@
     </div>
     <hr />
     <div id="TASKS_VIEW" class="tasks-box" data-url="{% url 'lms:tasks' slug=view.project.slug owner=owner.id %}" data-container="tasks">
-        <div class="tasks-bar d-flex justify-content-between mb-2">
-            <div class="d-flex">
-                <p class="section-heading">Tasks</p>
+        <div class="tasks-bar d-flex flex-md-row flex-column justify-content-between">
+            <div class="d-flex align-items-center w-100  mb-2">
+                <p class="section-heading">Activity Manager</p>
                 {% if view.project|is_write:view.member %}
-                <button style="border: solid 0.1px gainsboro;" class="add-btn"
+                    <button class="add-btn"
                     data-bs-toggle="modal" data-bs-target="#newTaskModal" data-action="new"
                     data-url="{% url 'lms:tasks' slug=view.project.slug owner=owner.id %}"
                 >
-                + Add new tasks
-                </button>
+                 + Add new tasks
+                  </button>              
                 {% endif %}
             </div>
-            <div class="task-search-div p-0 search-div me-3">
+            <div class="task-search-div w-100 p-0 search-div mb-2">
                 <input type="search" class="form-control search-box" id="task-search" placeholder="Search Task..."
-                    onchange="filterObjects('task-search','task-item','span', 0)" />                   
+                    oninput="filterObjects('task-search','task-item','span', 0)"/>                   
             </div>
         </div>
         <div id="TASKS_CONTENT" class="tasks-content" data-container-content="tasks">
@@ -260,13 +279,13 @@
     </div>
     <hr />
     <div id="NOTES_VIEW" data-url="{% url 'lms:notes' slug=view.project.slug owner=owner.id %}" data-container="notes">
-        <div class="notes-bar d-flex justify-content-between mb-3">
-            <div class="d-flex">
-                <p style="margin-bottom: 0px; margin-right: 4px;" class="section-heading">
+        <div class="notes-bar d-flex flex-md-row flex-column justify-content-between">
+            <div class="d-flex align-items-center w-100 mb-2">
+                <span style="margin-bottom: 0px; margin-right: 4px;" class="section-heading">
                 Notes
-                </p>
+                </span>
                 {% if view.project|is_write:view.member %}
-                <button style="border: solid 0.1px gainsboro;" class="add-btn"
+                <button style="" class="add-btn"
                     data-bs-toggle="modal" data-bs-target="#newNoteModal" data-action="new"
                     data-url="{% url 'lms:notes' slug=view.project.slug owner=owner.id %}"
                 >
@@ -274,10 +293,10 @@
                 </button>
                 {% endif %}
             </div>
-            <div class="notes-search-div p-0 search-div me-3">
+            <div class="notes-search-div w-100 p-0 search-div mb-2">
                 <input type="search" class="form-control search-box" id="notes-search" placeholder="Search Notes..."
-                 onchange="filterObjects('notes-search','note-item','span', 0)" />                   
-              </div>    
+                    oninput="filterObjects('notes-search','note-item','span', 0)" />                   
+            </div>    
         </div>
         <div id="NOTES_CONTENT" class="notes-content" data-container-content="notes">
             <!-- onwer_notes.html -->
@@ -294,17 +313,22 @@
                     <div class="flex-grow-1"  style="height: 100%; min-height: 200px; min-width: 70%;">
                         <div id="owner_parcels_map" class="" style="width: 100%; height: 100%;"></div>
                     </div>
-                    <div class="p-2 d-flex flex-column" style="min-width: 30%; max-height: inherit; overflow-y: scroll; overflow-x: hidden;">
-                        {% for relationship in view.owner_parcel_relationships %}
-                        <div class="lot-item w-100 d-flex flex-column" style="min-height: 100px; height: fit-content;"
-                            onmouseover="ownerParcelOnMouseHover('{{relationship.parcel.parcel.id}}')"
-                            onmouseleave="ownerParcelOnMouseLeaved('{{relationship.parcel.parcel.id}}')"
-                        >
-                            <span>{{ relationship.parcel.parcel }}</span>
-                            <span><b>Start:</b> {{ relationship.date_ownership_start }}</span>
-                            <span><b>Ceased:</b> {{ relationship.date_ownership_ceased }}</span>
+                    <div class="p-2 d-flex flex-column" style="overflow: hidden; min-width: 30%;  max-height: inherit">
+                        <div class="mb-2">
+                            <span style="color: gray;">Total parcels: {{view.owner_parcel_relationships.count}} parcels</span>
                         </div>
-                        {% endfor %}
+                        <div class="d-flex flex-column" style="max-height: inherit; overflow-y: scroll; overflow-x: hidden;">
+                            {% for relationship in view.owner_parcel_relationships %}
+                            <div class="parcel-item w-100 d-flex flex-column" style="min-height: 100px; height: fit-content;"
+                                onmouseover="ownerParcelOnMouseHover('{{relationship.parcel.parcel.id}}')"
+                                onmouseleave="ownerParcelOnMouseLeaved('{{relationship.parcel.parcel.id}}')"
+                            >
+                                <span>{{ relationship.parcel.parcel }}</span>
+                                <span><b>Start:</b> {{ relationship.date_ownership_start }}</span>
+                                <span><b>Ceased:</b> {{ relationship.date_ownership_ceased }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -356,6 +380,107 @@
         generateOwnerParcelsMap(owner_parcels_map, parcels_feature)
     })
 
+</script>
+<script>
+    $('#OWNER_BAR').get(0).scrollIntoView()
+    
+     // Correspondence
+    document.getElementById('CORRESPONDENCE_DROPDOWN').addEventListener('show.bs.dropdown', function (e) {
+        const correspondence_url = $('#CORRESPONDENCE_DROPDOWN').data('url')
+        $.ajax({
+            url: correspondence_url,
+            type: 'GET',
+            beforeSend: function () {
+                $('#correspondence_progress').removeClass('d-none')
+            },
+            success: function (response) {
+            console.log('Correspondence sucess');
+            $(CORRESPONDENCE_DROPDOWN_CONTENT).html(response.html)
+            $.ajax({
+                url: $('#CORRESPONDENCE_ITEM_LIST').data('url'),
+                type: 'GET',
+                success: function (response) {
+                    $('#CORRESPONDENCE_ITEM_LIST').html(response.html)
+                    $('#correspondence_progress ').addClass('d-none')
+                }
+            })
+            }
+        })
+    })
 
+    // Files
+    document.getElementById('FILES_DROPDOWN').addEventListener('show.bs.dropdown', function (e) {
+        const files_url = $('#FILES_DROPDOWN').data('url')
+        console.log('History ' + files_url);
+        $.ajax({
+            url: files_url,
+            type: 'GET',
+            beforeSend: function () {
+                $('#files_progress').removeClass('d-none')
+            },
+            success: function (response) {
+                console.log('Files success');
+                $('#FILES_DROPDOWN_CONTENT').html(response.html)
+                $('#files_progress').addClass('d-none')
+            }
+        })
+    })
+
+    // History
+    document.getElementById('HISTORY_DROPDOWN').addEventListener('show.bs.dropdown', function (e) {
+        const history_url = $('#HISTORY_DROPDOWN').data('url')
+        console.log('History ' + history_url);
+        $.ajax({
+            url: history_url,
+            type: 'GET',
+            beforeSend: function() {
+                $('#history_progress').removeClass('d-none')
+            },
+            success: function (response) {
+                console.log('History success');
+                $(HISTORY_DROPDOWN_CONTENT).html(response.html)
+                $('#history_progress').addClass('d-none')
+            }
+        })
+    })
+
+    // Reminders
+    reminders_url = $('#REMINDERS_VIEW').data('url')
+    console.log('REMINDER URL' + reminders_url);
+    $.ajax({
+        url: reminders_url,
+        type: 'GET',
+        beforeSend: function() {
+            $('#reminders_progress').removeClass('d-none')
+        },
+        success: function (response) {
+            $(REMINDERS_CONTENT).html(response.html)
+        },
+        complete: function() {
+            $('#reminders_progress').addClass('d-none')
+        }
+    })
+
+    // Tasks
+    tasks_url = $('#TASKS_VIEW').data('url')
+    $.ajax({
+        url: tasks_url,
+        type: 'GET',
+        success: function (response) {
+            console.log('Tasks success');
+            $(TASKS_CONTENT).html(response.html)
+        }
+    })
+
+    // Notes
+    notes_url = $('#NOTES_VIEW').data('url')
+    $.ajax({
+        url: notes_url,
+        type: 'GET',
+        success: function (response) {
+            console.log('Notes success');
+            $(NOTES_CONTENT).html(response.html)
+        }
+    })
 </script>
 {% endblock %}

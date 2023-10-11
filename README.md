@@ -4,20 +4,27 @@ Company Guidelines for Programming: https://drive.google.com/drive/folders/1zdl1
 
 In case you can't see the images below, please check `Platform Setup Instructions` in the link above.
 
+[PostgreSQL]: https://www.postgresql.org/download/
+[Python]: https://www.python.org/downloads/release/python-3810/
+[Brew]: https://brew.sh/
+
 ## Contents
 
-* [Install PostGIS Database](#install-postgis-database)
-* [pgAdmin4](#pgAdmin4)
-* [SQL Shell](#sql-shell)
-* [Using Terminal](#using-terminal)
-* [VS CODE EXPLORER](#vs-code-explorer)
-* [Final Steps](#final-steps)
-* [MacOS GDAL Installation](#macos-gdal-installation)
-* [Errors installing requirements.txt](#errors-installing-requirements.txt)
-* [MacOS Installation Issues](#macos-installation-issues)
+- [PLATFORM SETUP INSTRUCTIONS](#platform-setup-instructions)
+  - [Contents](#contents)
+  - [Install PostGIS Database](#install-postgis-database)
+  - [pgAdmin4](#pgadmin4)
+  - [SQL Shell](#sql-shell)
+  - [Using Terminal](#using-terminal)
+  - [VS CODE EXPLORER](#vs-code-explorer)
+  - [Final Steps](#final-steps)
+  - [MacOS GDAL Installation](#macos-gdal-installation)
+- [Installation Errors](#installation-errors)
+  - [Errors installing requirements.txt](#errors-installing-requirementstxt)
+  - [MacOS Installation Issues](#macos-installation-issues)
 
 ## Install PostGIS Database
-- Install the latest version of PostgreSQL from https://www.postgresql.org/download/
+- [Install the latest version of PostgreSQL][PostgreSQL]
 - Go with the default settings for everything except for things mentioned below.
 - Check “ADD TO PYTHON PATH” or something similar on one of the pages.
 - You might be asked to create a password during installation, make the password as `pass`(or change the passwords in the later steps).
@@ -48,7 +55,7 @@ In case you can't see the images below, please check `Platform Setup Instruction
 ## Using Terminal
 
 - Clone this repo and change directory in the terminal to where the repo is stored. 
-- Install Python version 3.8 from https://www.python.org/downloads/release/python-3810/.
+- [Install Python version 3.8][Python]
 - Execute the code in a terminal (command prompt for Windows users):
 - Check if Python version 3.8 is installed using `py -0`.
 - Create and activate virtual environment:
@@ -58,45 +65,31 @@ In case you can't see the images below, please check `Platform Setup Instruction
 ```
 - Install all the required packages:
 ```shell
-  py -m pip install --upgrade pip
-  pip install -U setuptools
-  pip install -U wheel
+  py -m pip install --upgrade pip setuptools wheel
+  pip install GDAL-3.3.3-cp38-cp38-win_amd64.whl
   pip install -r requirements.txt
 ```
 - Check if the requirements were installed using `pip list`
 
-- Then execute the following to install additional dependencies:
-``` shell
-  cd web
-  pip install GDAL-3.3.3-cp38-cp38-win_amd64.whl
-  pip install pyopenssl --upgrade
-  pip install daphne
-  pip install --upgrade attrs
-  pip install --upgrade channels
-  pip install psycopg2
-  pip install miceforest
-```
-- Check if the dependencies were installed using `pip list`
 
 ## VS CODE EXPLORER
-- Navigate to the project's web folder and rename `.env_defaults` to `.env` file.
+- Navigate to the project's web folder and copy contents of `.env_defaults` onto a new `.env` file.
 - Make these changes in .env (installation password is used here)
   
 ![Screenshot 2023-08-03 093340](https://i.imgur.com/ONJ02fT.png)
 
-- Then go to your virtual environment folder (venv) outside the web folder and move to `venv -> Lib -> djconfig -> admin.py` and edit line 29.
+<!-- - Then go to your virtual environment folder (venv) outside the web folder and move to `venv -> Lib -> djconfig -> admin.py` and edit line 29.
   	Change
                   `from django.conf.urls import url`
         to
-                  `from django.urls import re_path as url`
+                  `from django.urls import re_path as url` -->
 
 
 ## Final Steps
 - Make sure the directory is changed to `web` before executing the following (command prompt for Windows users):
 ```
-python delete_migrations.py
-python manage.py makemigrations	(ignore yellow warnings)
-python manage.py migrate	(if any errors come up regarding connections, PostGIS was not set up right)
+cd web
+python delete_migrations.py & python manage.py makemigrations & python manage.py migrate & python manage.py dl_tenements
 ```
 - Install `Firefox` web browser		(contains drivers needed for the platform)
 - Within the same terminal, execute: `python manage.py runserver`
@@ -104,7 +97,7 @@ python manage.py migrate	(if any errors come up regarding connections, PostGIS w
 - Register an account and you are ready to use the application
 
 ## MacOS GDAL Installation
-- Install brew (https://brew.sh/)
+- [Install brew][Brew]
 - Run the following command in your terminal: `brew install gdal`
 - Open web/main/settings.py and add the following lines at the end of the file:
 	`GDAL_LIBRARY_PATH = '/opt/homebrew/Cellar/gdal/3.5.3/lib/libgdal.31.dylib'`

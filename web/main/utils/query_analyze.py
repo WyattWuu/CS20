@@ -1,3 +1,4 @@
+import time
 from timeit import default_timer as timer
 from django.db import connection, reset_queries
 
@@ -30,4 +31,15 @@ def django_query_analyze(func):
         print()
         return func(*args, **kwargs)
 
+    return wrapper
+
+
+def time_function(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"{func.__name__} took {duration:.6f} seconds to execute.")
+        return result
     return wrapper

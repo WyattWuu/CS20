@@ -1,5 +1,5 @@
 function connectNotificationSocket() {
-    const notificationSocket = new WebSocket('ws://' + window.location.host + '/ws/notification/');
+    const notificationSocket = new WebSocket('wss://' + window.location.host + '/ws/notification/');
 
     notificationSocket.onopen = () => {
         // When the socket is open, request the first page of notifications.
@@ -122,4 +122,4 @@ function connectNotificationSocket() {
     });
 }
 
-connectNotificationSocket();
+// connectNotificationSocket();

@@ -30,6 +30,20 @@ User = get_user_model()
 SUBBLOCK_CHOICES = tuple((str(i + 1), v) for i, v in enumerate('ABCDEFGHIJKLMNOPQRSTUVWXYZ') if v != 'I')
 
 
+# class AbstractTenement(models.Model):
+#
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     project = models.ForeignKey(Project, related_name='tenements', blank=True, null=True, on_delete=models.SET_NULL)
+#
+#     country = models.CharField(max_length=3)
+#     province = models.CharField(max_length=3)
+#
+#     geometry = models.GeometryField(null=True, blank=True)
+#
+#     class Meta:
+#         abstract = True
+
+
 class Tenement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project, related_name='tenements', blank=True, null=True, on_delete=models.SET_NULL)
@@ -146,7 +160,33 @@ class Tenement(models.Model):
     class Meta:
         unique_together = ['permit_state', 'permit_type', 'permit_number']
         ordering = ['permit_state', 'permit_type', 'permit_number']
+        indexes = [
+            models.Index(fields=['permit_type', 'permit_status']),
+        ]
 
+
+class Moratorium(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenement = models.OneToOneField(Tenement, on_delete=models.CASCADE, blank=True, null=True)
+    effective_date = models.DateField()
+    geom = models.GeometryField()
+
+    # @property
+    # def geom(self):
+    #     return self.tenement.area_polygons
+
+    class Meta:
+        ordering = ['effective_date']
+
+    @property
+    def test_property(self):
+        return 'potato'
+
+    def test_function(self):
+        return 'egg'
+
+    def __str__(self):
+        return self.tenement.permit_id
 
 
 # class Target(models.Model):
@@ -361,7 +401,7 @@ class Target(models.Model):
     description = models.CharField(max_length=256, blank=True, null=True)
     created_user = models.ForeignKey(User, on_delete=models.PROTECT)
 
-    area = models.PointField
+    area = models.GeometryField(dim=1, null=True, blank=True)
 
     # TODO: Figure out if anything else needs to go here.
 

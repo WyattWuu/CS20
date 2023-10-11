@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
@@ -33,15 +34,40 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-^#f@e(-h%=$vdha5x)j9n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    'accept-encoding',
+    'x-csrftoken',
+    'access-control-allow-origin',
+    'content-disposition',
+    'withcredentials',
+    'cookie',
+)
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS')
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Example: Allow requests from your frontend application running on localhost
+    "http://127.0.0.1:3000" 
+       # Add more origins as needed
+]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 SITE_HOST = "127.0.0.1"
 SITE_ID = 1
+SITE_URL = 'http://127.0.0.1:8000'
+
 
 # Application definition
 PROJECT_APPS = [
+    'object_permissions',
     'forms',
     'user',
     'website',
+    'data_catalogue',
     'appboard',
     'media_file',
     'project',
@@ -53,11 +79,14 @@ PROJECT_APPS = [
     'geodesk_gis',
     'project_management',
     'autoform',
-
+    'knowledge_management_system',
     'notification'
 ]
 
+
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'daphne',
     'attrs',
     'django.contrib.admin',
@@ -71,7 +100,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'leaflet',
 
-    'channels'
+    'channels',
+    'common',
 ] + PROJECT_APPS
 
 MIDDLEWARE = [
@@ -112,6 +142,24 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+     ),
+     'DEFAULT_PERMISSIONS_CLASSES': (
+      'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAdminUser',
+         
+     ),
+}
+
+#Authentication backends
+AUTHENTICATION_BACKENDS = (
+    #'user.authentication.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 WSGI_APPLICATION = 'main.wsgi.application'
 ASGI_APPLICATION = 'main.asgi.application'
@@ -213,7 +261,7 @@ ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 SOCIALACCOUNT_AUTO_SIGNUP = False
 
 LOGIN_REDIRECT_URL = 'appboard:home'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'website:home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'user:login'
 
 
 # Internationalization
@@ -249,24 +297,9 @@ HAYSTACK_CONNECTIONS = {
         'PATH': os.path.join(BASE_DIR, 'st_search'),
     },
 }
-# TODO: What is this?
-# HAYSTACK_SIGNAL_PROCESSOR = 'spirit.search.signals.RealtimeSignalProcessor'
+HAYSTACK_SIGNAL_PROCESSOR = 'spirit.search.signals.RealtimeSignalProcessor'
 
 ST_SITE_URL = 'http://127.0.0.1:8000/'
-
-# TODO: Is this needed post spirit removal?
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-#         'LOCATION': 'spirit_cache',
-#     },
-#     'st_rate_limit': {
-#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-#         'LOCATION': 'spirit_rl_cache',
-#         'TIMEOUT': None
-#     }
-# }
-
 
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = 'appboard:home'
@@ -280,5 +313,17 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER= 'testbot.orefox@gmail.com'
 EMAIL_HOST_PASSWORD= 'dmfuabickxfkkljk'
+
 PASSWORD_RESET_TIMEOUT = 1440
 
+#haoran STRIPE_SECRET_KEY="sk_test_51NccGMJ3jZ6WQD1W0ltgAPvb2wUt1mrKJh1OyIYWV5uVmDLNfGvRnyDPzmPeM9J7KP6aCEhPtre4lMZjLLBtLfvJ00mi3RXwfy"
+STRIPE_SECRET_KEY="sk_test_51NLeF1E5nog93nDG5Ju0wA6IuNv80XhvM6VR53fEkei33hHzh4w1yuO7SG7ExQk1RhXs9329xLYVPWxyrNAgC19h00vc4xmciL"
+#STRIPE_SECRET_KEY = "pk_test_51NLeF1E5nog93nDGfVv6nCUpuHSI88NCFxse4piZtboICuARzm4AqMnmtg9lrlT7LO1cGoUdkw2SA6g7bnJZQS93009NdjCdZ1"
+# haoran STRIPE_SECRET_WEBHOOK = "whsec_e6b504f7e9005844a06b8e67b5d718b3defa224464d8ef9fc72e4cb3f04472d3"
+STRIPE_SECRET_WEBHOOK="whsec_1ff749461c976c657ead08e10426c307f1fdac8742133e8f8eed16a4a0f3a4ce"
+
+#APPSTORE URLs
+APP_STORE_URL="http://127.0.0.1:3000"
+APP_STORE_FRONTEND_URL='"http://127.0.0.1:3000"/home'
+FRONTEND_DOMAIN = "http://127.0.0.1:3000"
+# handler404 = 'main.urls.page_not_found_view'

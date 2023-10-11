@@ -57,6 +57,7 @@
 
       display: flex;
       justify-content:space-around;
+      align-items: center;
     }
 
     .form-text.error {
@@ -86,6 +87,11 @@
     </div>
     <form id="parcel_mail_form" class="parcel-mail-form">
       <div class="modal-body">
+          <i style="color: gray; margin-bottom: 2px;">Sending mail to multiple Landowners of Parcel {{view.parcel.parcel.lot_plan}}.</i>
+          <div class='mb-3' style='border: 0.5px solid gainsboro; border-radius: 5px; padding: 4px;'>
+            <i class='fa-solid fa-circle-info'></i> 
+            <span>Selected recipients are displayed below. Landowners who are mail targets will be selected automatically.</span>
+          </div>
           <div class="recipients-div">
             
             <label style="color: grey;">Recipients</label>
@@ -93,7 +99,7 @@
               <option value="">+ Add mail target</option>
             </select>
             <div id="recipient_select_error" class="form-text error"></div>
-            <select hidden aria-hidden name="recipient_select_hidden" id="recipient_select_hidden" multiple required>
+            <select hidden aria-hidden name="recipient_select_hidden" id="recipient_select_hidden" multiple>
               {% if view.queryset %} {% for relationship in view.queryset %}
                 <!-- Select all owners relationship when first render -->
                 <option name="{{relationship.owner.get_full_name}}" value="{{relationship.id}}" 
@@ -120,7 +126,7 @@
             <input id="mail_subject" class="subject-input" placeholder="Subject (Default: Mail from Parcel {{ view.parcel.parcel.lot_plan }})" type="text">
             <p>Dear Owners of Parcel {{view.parcel.parcel.lot_plan}},</p>
             <textarea id="mail_body" class="body-textarea" placeholder="Content" required></textarea>
-            <p>King Rgards,<br>Orefox</p>
+            <p>King Regards,<br>Orefox</p>
             <input class="form-control form-control-sm" id="mail_attachment" name="mail_attachment" type="file" multiple>
           </div>
           <div id="mail_form_error" class="form-error visually-hidden">
@@ -210,7 +216,7 @@
               <span class="me-2">
                 ${$option.attr('name')} - ${$option.data('email')}
               </span>
-              <button class="recipient-remove btn-clear-hover" option-value="${value}" type="button">X</button>
+              <button class="recipient-remove btn-clear-hover dark-hover p-1" option-value="${value}" type="button">X</button>
           </div>
         `
       }).join("")
@@ -225,7 +231,7 @@
      * 
     */
     function onParcelMailFormSubmit(e) {
-      console.log('On parcel Submit');
+      console.log('On parcel mail Submit');
 
       const $form = $('#parcel_mail_form')
       const $modal = $('#PARCEL_MAIL_MODAL')
@@ -270,7 +276,7 @@
         enctype: "multipart/form-data",
         beforeSend: function () {
           $submitBtn.attr('disabled', '')
-          $submitBtn.append(spinnerHtmlString)
+          {% comment %} $submitBtn.append(spinnerHtmlString) {% endcomment %}
 
           $cancelBtn.addClass('visually-hidden')
 

@@ -8,4 +8,5 @@ app_name = "appboard"
 
 urlpatterns = [
     path('', views.home, name='home'),
+ 
 ]

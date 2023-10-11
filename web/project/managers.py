@@ -46,6 +46,7 @@ class ProjectManager(models.Manager):
         return {
             'data': [{
                 'name': project.name,
+                'rawSlug': project.slug,
                 'slug': project.get_absolute_url(),
                 'state': project.state,
                 'permission': project.request_member[0].get_permission_display(),

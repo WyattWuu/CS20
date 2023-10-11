@@ -9,7 +9,12 @@
 {% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    {# MAP CSS #}
+    <link rel="stylesheet" href="{% static "interactive_map/css/api.css" %}"/>
+
+    {% csrf_token %}
 {% endblock %}
 
 
@@ -24,25 +29,25 @@
 {% endblock %}
 
 {% block content %}
-<div
-id="flash-message" class="text-sm ms-4">
-    {% if messages %}
-    {% for message in messages %} 
-    {% if message.level == 25 %}
-    <span
-    class="alert alert-success text-center p-2"> {{ message }}
-    </span>
-    {% elif message.level == 40 %}
-    <span
-    class="alert alert-danger text-center p-2"> {{ message }}
-    </span>
-    {% endif %} {% endfor %} {% endif %}
-</div>
+    <div
+            id="flash-message" class="text-md ms-4">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.level == 25 %}
+                    <div
+                            class="alert alert-success p-3"> {{ message }}
+    </div>
+                {% elif message.level == 40 %}
+                    <div
+                            class="alert alert-danger p-3"> {{ message }}
+    </div>
+                {% endif %} {% endfor %} {% endif %}
+    </div>
 
-  <div class="container-fluid px-4">
-      <div class="row text-center mb-2 content-margin-top-offest">
-          <h4 class="mb-4 text-ofx-blue">{{ tenement.permit_id }}<i class="fa-solid fa-earth-oceania ms-2"></i></h4>
-      </div>     
+    <div class="container-fluid px-4">
+        <div class="row text-center mb-2 content-margin-top-offest">
+            <h4 class="mb-4 text-ofx-blue">{{ tenement.permit_id }}<i class="fa-solid fa-earth-oceania ms-2"></i></h4>
+        </div>
         <div class="row row-cols g-3">
             <div class="col-sm-12 col-xl-8">
                 <div class="row g-3">
@@ -68,7 +73,7 @@ id="flash-message" class="text-sm ms-4">
                                         <a class="nav-link" id="nav-permit-info-tab" data-bs-toggle="tab"
                                            data-bs-target="#nav-targets" aria-controls="nav-targets"
                                            aria-selected="false">
-                                            Targets
+                                            Prospects
                                         </a>
                                     {% endif %}
                                 </div>
@@ -189,7 +194,7 @@ id="flash-message" class="text-sm ms-4">
                                 </div>
                                 <div class="tab-pane" id="nav-holders" role="tabpanel"
                                      aria-labelledby="nav-holders-tab">
-                                     <h4 class="mt-2 fw-bold">Authorised Holder Representative (AHR)</h4>
+                                    <h4 class="mt-2 fw-bold">Authorised Holder Representative (AHR)</h4>
                                     <table class="table table-sm p-dash-table">
                                         <colgroup>
                                             <col span="1" style="width: 15%">
@@ -306,15 +311,17 @@ id="flash-message" class="text-sm ms-4">
                                                 <th>Description</th>
                                                 <th>Location (Lat/Long)</th>
                                                 <th>
-                                                    {% comment %} {% if tenement.project|is_admin:member %}
-                                                        <span data-bs-toggle="modal" data-bs-target="#addTargetModal">
-                                                            <button class="btn btn-ofx-fa btn-ofx-green float-end text-xs"
+                                                    {% if tenement.project|is_admin:member %}
+                                                        <span data-bs-toggle="modal"
+                                                              data-bs-target="#addEditTargetModal">
+                                                            <button id="addTargetButton"
+                                                                    class="btn btn-ofx-fa btn-ofx-green float-end text-xs"
                                                                     data-bs-toggle="tooltip" data-bs-placement="left"
-                                                                    title="Add Target">
-                                                                <span class="fa fa-plus"/>
+                                                                    title="Add Prospect">
+                                                                <span class="fa fa-plus"></span>
                                                             </button>
                                                         </span>
-                                                    {% endif %} {% endcomment %}
+                                                    {% endif %}
                                                 </th>
                                             </tr>
                                             </thead>
@@ -337,14 +344,18 @@ id="flash-message" class="text-sm ms-4">
                                             onclick="window.location.href='{% url 'project:dashboard' slug=tenement.project.slug %}';">
                                         {{ tenement.project.name }} <span class="fa fa-chalkboard"/>
                                     </button>
+                                    {% comment %} <button class="btn btn-sm btn-ofx-blue" type="button">KMS <span
+                                            class="fa fa-comment"/>
+                                    </button> {% endcomment %}
+
                                     {# Owner Only #}
-                                    {% if tenement.project|is_admin:member %}
+                                    {% comment %} {% if tenement.project|is_admin:member %}
                                         <button class="btn btn-sm btn-ofx-gray" type="button"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modifyTenementModal">
                                             Modify <span class="fa fa-cog"/>
                                         </button>
-                                    {% endif %}
+                                    {% endif %} {% endcomment %}
                                     {% if tenement.project|is_owner:member %}
                                         <button class="btn btn-sm btn-ofx-red" type="button"
                                                 data-bs-toggle="modal"
@@ -434,58 +445,17 @@ id="flash-message" class="text-sm ms-4">
                                     <div class="tab-pane active col-12" id="work-program-summary-total" role="tabpanel"
                                          aria-labelledby="nav-holders-tab">
                                         <table id="summary-total-table" class="table table-sm dt-responsive w-100">
-                                            <thead>
-                                            <th>Discipline</th>
-                                            <th>Units</th>
-                                            <th>Quantity</th>
-                                            <th>Total Cost</th>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
                                         </table>
                                     </div>
                                     <div class="tab-pane" id="work-program-yearly-total" role="tabpanel"
                                          aria-labelledby="nav-holders-tab">
                                         <table id="yearly-total-table" class="table table-sm dt-responsive w-100">
-                                            <thead>
-                                            <th>Year</th>
-                                            <th>Discipline</th>
-                                            <th>Units</th>
-                                            <th>Quantity</th>
-                                            <th>Total Cost</th>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
                                         </table>
                                     </div>
 
                                     <div class="tab-pane overflow-auto" id="work-program-activity" role="tabpanel"
                                          aria-labelledby="nav-holders-tab">
                                         <table id="activity-table" class="table table-sm dt-responsive w-100">
-                                            <thead>
-
-                                            <th>Year</th>
-                                            <th>Discipline</th>
-                                            <th>Activity</th>
-                                            <th>Units</th>
-                                            <th>Quantity</th>
-                                            <th>Expenditure</th>
-                                            <th>Actual Expenditure</th>
-                                            <th>Receipt</th>
-                                            <th>
-                                                {% if tenement.project|is_admin:member %}
-                                                <span data-bs-toggle="modal" data-bs-target="#createWorkProgramModal">
-                                            <button class="btn btn-ofx-fa btn-ofx-green float-end text-xs"
-                                                    data-bs-toggle="tooltip" data-bs-placement="left" title="Create Work Program">
-                                                <span class="fa fa-plus"/>
-                                            </button>
-                                        </span>
-                                            {% endif %}
-                                            </th>
-
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -496,37 +466,41 @@ id="flash-message" class="text-sm ms-4">
             </div>
 
             <div class="col-sm-12 col-xl-4">
-                {% if tenement.project|is_read:member %}
+                {% comment %} {% if tenement.project|is_read:member %}
 {#                     TODO: Statistics Box #}
 {#                     Appear in screen larger or equal to xl. Disappear otherwise #}
 
                     <div id="statistics_div_xl" class="mb-3 py-0">
                         <div id="statistics_card" class="card shadow ">
                             <div class="card-header mb-0">
-                                Actions Overview    --     Coming soon
+                                Actions Overview -- Coming soon
                             </div>
                             <div class="card-body ">
                                 <div class="card-body justify-content-between">
-                                   <div class="d-flex justify-content-around ">
+                                    <div class="d-flex justify-content-around ">
                                         <a class="btn btn-sm btn-ofx-green  mb-3 me-2" href="#" style="width:150px"><i
-                                            class="fa-solid fa-file-lines  fa-fw "></i>Annual Report</a>
+                                                class="fa-solid fa-file-lines  fa-fw "></i>Annual Report</a>
                                         <a class="btn btn-sm btn-ofx-red  mb-3" href="#" style="width:150px"><i
-                                            class="fa-solid fa-money-bill-wave fa-fw "></i>&nbspExpenditure</a>
+                                                class="fa-solid fa-money-bill-wave fa-fw "></i>&nbspExpenditure</a>
                                     </div>
                                     <div class="d-flex justify-content-around">
                                         <a class="btn btn-sm btn-ofx-green me-2" style="width:150px" href="#"><i
-                                            class="fa-solid fa-seedling  fa-fw "></i>&nbspEA return</a>
+                                                class="fa-solid fa-seedling  fa-fw "></i>&nbspEA return</a>
                                         <a class="btn btn-sm btn-ofx-blue " style="width:150px" href="#"><i
-                                            class="fa-solid fa-arrows-spin  fa-fw"></i>Renewal</a>
+                                                class="fa-solid fa-arrows-spin  fa-fw"></i>Renewal</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                {% endif %}
+                {% endif %} {% endcomment %}
 
-                {# TODO: Map box #}
-                <div id='tenement_map_box'>
+                {# Tenement Map Box #}
+                <div id ='tenement_map_box' class="col-12" style="height:200px">
+                    <div class="card shadow w-100">
+                        <div class="card-header font-weight-bold">Tenement Map</div>
+                        <div class="card-body" id="tenement-map"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -543,6 +517,18 @@ id="flash-message" class="text-sm ms-4">
 
         {% else %}
 
+            {# TARGET MODALS #}
+            {% modalform id='addEditTarget' title='Add Prospect' submit_text='Add' dynamic='true' %}
+                {% csrf_token %}
+                {{ createTargetForm.as_p }}
+                <input type="hidden" id="id_target_id" name="target_id">
+            {% endmodalform %}
+
+            {% modalform id='deleteTarget' title='Remove Prospect' submit_text='Remove' submit_class='btn-ofx-red' dynamic='true' %}
+                {% csrf_token %}
+                <p>Remove <b id="name"></b> from the project?</p>
+            {% endmodalform %}
+
             {# CLAIMED TENEMENT MODAL FORMS #}
             {% if project|is_write:member %}
 
@@ -557,7 +543,7 @@ id="flash-message" class="text-sm ms-4">
                 {% modalform id='createWorkProgram' title='Create Work Program' %}
                     {% csrf_token %}
                     {{ createWorkProgramForm.as_p }}
-                   
+
                 {% endmodalform %}
             {% endif %}
             {% if project|is_write:member %}
@@ -572,7 +558,7 @@ id="flash-message" class="text-sm ms-4">
                 {% modalform id='modifyTenement' title='Modify Tenement' submit_text='Update' %}
                     {% csrf_token %}
                     {{ modifyTenementForm.as_p }}
-                    <p>Coming Soon</p>
+                    {% comment %} <p>Coming Soon</p> {% endcomment %}
                 {% endmodalform %}
 
                 {% modalform id='deleteTenement' title='Relinquish Tenement' submit_class='Relinquish' submit_class='btn-ofx-red' %}
@@ -599,12 +585,12 @@ id="flash-message" class="text-sm ms-4">
                     {{ deleteWorkProgramForm.as_p }}
                     <p>Remove <b id="name"></b> from the work program?</p>
                 {% endmodalform %}
-             
-                {% modalform id='createWorkProgramReceipt' title='Create Work Program Receipt' submit_text='Submit'  dynamic='true' %}
+
+                {% modalform id='createWorkProgramReceipt' title='Create Work Program Receipt' submit_text='Submit' dynamic='true' %}
                     {% csrf_token %}
                     {{ createWorkProgramReceipt.as_p }}
-                    
-               {% endmodalform %}
+
+                {% endmodalform %}
             {% endif %}
         {% endif %}
     {% endwith %}
@@ -614,27 +600,28 @@ id="flash-message" class="text-sm ms-4">
 
 {% block extra_body %}
     <script type="text/javascript" src="{% static 'tms/js/tenement_dashboard.js' %}"></script>
-    <script type="text/javascript" src="{% static 'interactive_map/js/get_tenement_map.js' %}"></script>
+    <script src="{% static 'interactive_map/js/api.js' %}" type="text/javascript"></script>
+
     <script>
         //$(window).resize(updateStatisticsCardPos)
 
         setTimeout(function () {
-            if( document.getElementById("flash-message") !== null)
-            document.getElementById("flash-message").style.display = "none";
-          }, 3000);
-          
-          $('button[type="submit"]').on('click', function (event) {
+            if (document.getElementById("flash-message") !== null)
+                document.getElementById("flash-message").style.display = "none";
+        }, 3000);
+
+        $('button[type="submit"]').on('click', function (event) {
             formId = event.target.form.id;
             const form = document.getElementById(formId);
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
                 form.classList.add('was-validated');
-               }
+            }
 
-           });
+        });
 
-    </script>                
+    </script>
     <script>
         $(window).resize(updateStatisticsCardPos)
 
@@ -652,17 +639,24 @@ id="flash-message" class="text-sm ms-4">
                         {data: 'location'},
                         {
                             data: 'actions', bSortable: false,
-                            {% if project|is_admin:member %}
-                                render: function (data, type, row) {
+
+                            render: function (data, type, row) {
+                                " {% if tenement.project|is_admin:member %}"
                                     return `<div class="float-end">
-                                <span data-bs-toggle="modal" data-bs-target="#deleteTargetModal">
-                                    <button class="btn btn-sm btn-ofx-fa-red" data-bs-toggle="tooltip" data-bs-placement="left"
-                                            title="Delete Target">
-                                        <span class="fa fa-trash"/>
-                                    </button>
-                                </span></div>`;
-                                }
-                            {% endif %}
+                                        <span data-bs-toggle="modal" data-bs-target="#addEditTargetModal">
+                                            <button class="btn btn-ofx-fa btn-ofx-fa-gray" data-bs-toggle="tooltip" data-bs-placement="left" title="Edit Prospect">
+                                                <span class="fa-sharp fa-solid fa-pen"/>
+                                            </button>
+                                        </span>
+                                        <span data-bs-toggle="modal" data-bs-target="#deleteTargetModal">
+                                            <button class="btn btn-sm btn-ofx-fa-red" data-bs-toggle="tooltip" data-bs-placement="left"
+                                                    title="Delete Prospect">
+                                                <span class="fa fa-trash"/>
+                                            </button>
+                                        </span></div>`;
+                                    "   {% endif %}"
+                            }
+
                         }
                     ],
                     ajax: {
@@ -671,7 +665,11 @@ id="flash-message" class="text-sm ms-4">
                         contentType: 'application/json',
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         dataSrc: function (response) {
-                            return get_intersected_targets(response.tenement, response.targets, L.geoJson(response.tenement_data));
+                            for (let i = 0; i < response.data.length; i++) {
+                                var coordinates = response.data[i].location.split(" ")
+                                response.data[i].location = "[ " + coordinates[0] + ", " + coordinates[1] + " ]"
+                            }
+                            return response.data;
                         },
                     }
                 });
@@ -745,35 +743,35 @@ id="flash-message" class="text-sm ms-4">
                     'bDestroy': true,
                     order: [[0, "asc"], [1, "asc"]],
                     columns: [
-                        {data: 'year', bSortable: true,},
-                        {data: 'discipline', bSortable: true,},
-                        {data: 'activity', bSortable: true,},
+                        {data: 'year', title: 'Year', bSortable: true,},
+                        {data: 'discipline', title: 'Discipline', bSortable: true,},
+                        {data: 'activity', title: 'Activity', bSortable: true,},
                         {
-                            data: 'units', bSortable: true,
+                            data: 'units', title: 'Units', bSortable: true,
                             render: function (data, type, row) {
                                 return `${data} ${row.units_display}`
                             }
                         },
                         {
-                            data: 'quantity', bSortable: true,
+                            data: 'quantity', title: 'Quantity', bSortable: true,
                             render: function (data, type, row) {
                                 return `${data} ${row.quantity_display}`
                             }
                         },
                         {
-                            data: 'expenditure', bSortable: true,
+                            data: 'expenditure', title: 'Expenditure', bSortable: true,
                             render: function (data, type, row) {
                                 return `$${(data).toFixed(2)}`
                             }
                         },
                         {
-                            data: 'actual_expenditure', bSortable: true,
+                            data: 'actual_expenditure', title: 'Actual Expenditure', bSortable: true,
                             render: function (data, type, row) {
                                 return `$${(data).toFixed(2)}`
                             }
                         },
                         {
-                            data: 'receipts', bSortable: false,
+                            data: 'receipts', title: 'Receipts', bSortable: false,
                             render: function (data, type, row) {
                                 let files = data['files'];
                                 let options = '';
@@ -814,7 +812,7 @@ id="flash-message" class="text-sm ms-4">
                             }
                         },
                         {
-                            data: 'actions', bSortable: false,
+                            data: 'actions', title: 'Actions', bSortable: false,
                             {% if tenement.project|is_admin:request.user %}
                                 mRender: function () {
                                     return `
@@ -836,129 +834,127 @@ id="flash-message" class="text-sm ms-4">
                         contentType: 'application/json',
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         dataSrc: function (response) {
-                            yearly_total_data = {}
-                            work_program = response.data
-                            for (i = 0; i < work_program.length; i++) {
-                                if (yearly_total_data.hasOwnProperty(String(work_program[i].year) + work_program[i].discipline)) {
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].units += work_program[i].units
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].quantity += work_program[i].quantity
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].expenditure += work_program[i].expenditure
+                            const records = response.data
+
+                            // Calculate Actual Expenditure from receipts
+                            records.forEach(entry => {
+                                entry.actual_expenditure = 0
+                                entry.receipts.files.forEach(receipt => {
+                                    entry.actual_expenditure += receipt['cost']
+                                });
+                            })
+
+                            // Calculate Yearly/Summary Totals
+                            const yearlyTotals = {}
+                            const summaryTotals = {}
+
+                            records.forEach(entry => {
+                                const year = entry.year;
+                                const discipline = entry.discipline;
+
+                                // Calculate Yearly Totals
+                                if (!yearlyTotals[year]) {
+                                    yearlyTotals[year] = {}
+                                }
+                                if (!yearlyTotals[year][discipline]) {
+                                    // First entry can just be the first entry we have in the table
+                                    yearlyTotals[year][discipline] = {
+                                        year: entry.year,
+                                        discipline: entry.discipline,
+                                        quantity: entry.quantity,
+                                        quantity_display: entry.quantity_display,
+                                        units: entry.units,
+                                        units_display: entry.units_display,
+                                        expenditure: entry.expenditure,
+                                        actual_expenditure: entry.actual_expenditure,
+                                    }
                                 } else {
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline] = {}
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].units = work_program[i].units
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].year = work_program[i].year
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].discipline = work_program[i].discipline
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].quantity = work_program[i].quantity
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].expenditure = work_program[i].expenditure
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].units_display = work_program[i].units_display
-                                    yearly_total_data[String(work_program[i].year) + work_program[i].discipline].quantity_display = work_program[i].quantity_display
+                                    // Aggregate yearly totals
+                                    yearlyTotals[year][discipline].units += entry.units;
+                                    yearlyTotals[year][discipline].quantity += entry.quantity;
+                                    yearlyTotals[year][discipline].expenditure += entry.expenditure;
+                                    yearlyTotals[year][discipline].actual_expenditure += entry.actual_expenditure;
+                                }
+
+                                // Calculate Summary Total JSON
+                                if (!summaryTotals[discipline]) {
+                                    // First entry should set year at 1 in case the order has come in incorrectly
+                                    summaryTotals[discipline] = {
+                                        discipline: discipline,
+                                        year: 1,
+                                        quantity: entry.quantity,
+                                        quantity_display: entry.quantity_display,
+                                        units: entry.units,
+                                        units_display: entry.units_display,
+                                        expenditure: entry.expenditure,
+                                        actual_expenditure: entry.actual_expenditure,
+                                    }
+                                } else {
+                                    // Aggregate summary totals
+                                    summaryTotals[discipline].year += (year > summaryTotals[discipline].year) ? 1 : 0;
+                                    summaryTotals[discipline].units += entry.units;
+                                    summaryTotals[discipline].quantity += entry.quantity;
+                                    summaryTotals[discipline].expenditure += entry.expenditure;
+                                    summaryTotals[discipline].actual_expenditure += entry.actual_expenditure;
+                                }
+                            });
+
+                            // Flatten yearlyTotals/summaryTotals into arrays for datatable inputs
+                            const yearlyTotalsArray = [];
+                            const summaryTotalsArray = [];
+
+                            for (const year in yearlyTotals) {
+                                for (const discipline in yearlyTotals[year]) {
+                                    yearlyTotalsArray.push(yearlyTotals[year][discipline]);
                                 }
                             }
-                            yearly_total_data_list = []
-                            for (var key in yearly_total_data) {
-                                if (yearly_total_data.hasOwnProperty(key)) {
-                                    yearly_total_data_list.push(yearly_total_data[key]);
-                                }
+                            for (const discipline in summaryTotals) {
+                                summaryTotalsArray.push(summaryTotals[discipline]);
                             }
-                            let yearlyTotalTable = $('#yearly-total-table').DataTable({
-                                'bSort': false,
-                                'bPaginate': false,
-                                'bDestroy': true,
-                                order: [[0, "asc"], [1, "asc"]],
-                                rowGroup: {
-                                    dataSrc: function (row) {
-                                        return 'Year ' + row.year;
-                                    },
-                                    className: "dt-body-center",
+
+                            // Define columns since both tables share the same columns
+                            const totalColumns = [
+                                {data: 'year', title: 'Year'},
+                                {data: 'discipline', title: 'Discipline'},
+                                {
+                                    data: 'units', title: 'Units',
+                                    render: function (data, type, row) {
+                                        return `${data} ${row.units_display}`
+                                    }
                                 },
-                                columns: [
-                                    {data: 'year', bSortable: true, visible: false},
-                                    {data: 'discipline', bSortable: false,},
-                                    {
-                                        data: 'units', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `${data} ${row.units_display}`
-                                        }
-                                    },
-                                    {
-                                        data: 'quantity', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `${data} ${row.quantity_display}`
-                                        }
-                                    },
-                                    {
-                                        data: 'expenditure', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `$${(data).toFixed(2)}`
-                                        }
-                                    },
-                                ],
-                                data: yearly_total_data_list,
-                            })
+                                {
+                                    data: 'quantity', title: 'Quantity',
+                                    render: function (data, type, row) {
+                                        return `${data} ${row.quantity_display}`
+                                    }
+                                },
+                                {data: 'expenditure', title: 'Expenditure', render: data => `$${(data).toFixed(2)}`},
+                                {
+                                    data: 'actual_expenditure',
+                                    title: 'Actual Expenditure',
+                                    render: data => `$${(data).toFixed(2)}`
+                                },
+                            ]
 
-                            summary_total_data = {}
-                            for (i = 0; i < work_program.length; i++) {
+                            // Build the yearly total table
+                            $('#yearly-total-table').DataTable({
+                                bSort: false,
+                                bPaginate: false,
+                                bDestroy: true,
+                                columns: totalColumns,
+                                data: yearlyTotalsArray
+                            });
 
-                                if (summary_total_data.hasOwnProperty(work_program[i].discipline)) {
-                                    summary_total_data[work_program[i].discipline].units += work_program[i].units
-                                    summary_total_data[work_program[i].discipline].quantity += work_program[i].quantity
-                                    summary_total_data[work_program[i].discipline].expenditure += work_program[i].expenditure
-                                } else {
-                                    summary_total_data[work_program[i].discipline] = {}
-                                    summary_total_data[work_program[i].discipline].units = work_program[i].units
-                                    summary_total_data[work_program[i].discipline].discipline = work_program[i].discipline
-                                    summary_total_data[work_program[i].discipline].quantity = work_program[i].quantity
-                                    summary_total_data[work_program[i].discipline].expenditure = work_program[i].expenditure
-                                    summary_total_data[work_program[i].discipline].units_display = work_program[i].units_display
-                                    summary_total_data[work_program[i].discipline].quantity_display = work_program[i].quantity_display
-                                }
-                            }
+                            // Build the summary total table
+                            $('#summary-total-table').DataTable({
+                                bSort: false,
+                                bPaginate: false,
+                                bDestroy: true,
+                                columns: totalColumns,
+                                data: summaryTotalsArray
+                            });
 
-                            summary_total_data_list = []
-                            for (var key in summary_total_data) {
-                                if (summary_total_data.hasOwnProperty(key)) {
-                                    summary_total_data_list.push(summary_total_data[key]);
-                                }
-                            }
-                            let summaryTotalTable = $('#summary-total-table').DataTable({
-                                'bSort': false,
-                                'bPaginate': false,
-                                'bDestroy': true,
-                                order: [[0, "asc"]],
-                                columns: [
-
-                                    {data: 'discipline', bSortable: true,},
-                                    {
-                                        data: 'units', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `${data} ${row.units_display}`
-                                        }
-                                    },
-                                    {
-                                        data: 'quantity', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `${data} ${row.quantity_display}`
-                                        }
-                                    },
-                                    {
-                                        data: 'expenditure', bSortable: false,
-                                        render: function (data, type, row) {
-                                            return `$${(data).toFixed(2)}`
-                                        }
-                                    },
-                                ],
-                                data: summary_total_data_list,
-                            })
-
-                            for (program of response.data) {
-                                let actual_expenditure = 0
-                                for (receipt of program.receipts.files) {
-                                    actual_expenditure += receipt.cost
-                                }
-                                program.actual_expenditure = actual_expenditure
-                            }
-
-                            return response.data;
+                            return records;
                         },
                     }
                 });
@@ -966,7 +962,6 @@ id="flash-message" class="text-sm ms-4">
             {% endif %}
 
             {% if not tenement.project %}
-
                 $("#claimTenementForm").on('submit', function (e) {
                     e.preventDefault()
                     let $form = $(this)
@@ -984,11 +979,196 @@ id="flash-message" class="text-sm ms-4">
                         }
                     })
                 })
-
             {% endif %}
 
-            $('#tenement_map_box').load("{% url 'tms:get_tenement_map' permit_state=tenement.permit_state permit_type=tenement.permit_type permit_number=tenement.permit_number %}");
+            const tenementMap = $('#tenement-map').InteractiveMap({
+                width: '100%',
+                height: '0',
+                paddingBottom: '80%',
+                widgets: ['zoomButton', 'resetBounds'],
+                layers: [
+                    {
+                        {# PROSPECT ENDPOINT #}
+                        url: "{% url 'interactive_map:tenement_prospects' permit_state=tenement.permit_state permit_type=tenement.permit_type permit_number=tenement.permit_number %}",
+                        tooltip: (feature) => feature.properties.name,
+                    },
+                    {
+                        {# TENEMENT ENDPOINT #}
+                        url: "{% url 'interactive_map:tenement' permit_state=tenement.permit_state permit_type=tenement.permit_type permit_number=tenement.permit_number %}",
+                        tooltip: (feature) => {
+                            const { permit_type, permit_number } = feature.properties;
+    
+                            return `${permit_type} ${permit_number}`;
+                        },
+                    },
+                ]
+            });
+            
+            
+            const prospectMap = $('#target_map').InteractiveMap({
+                width: '100%',
+                height: '0',
+                paddingBottom: '80%',
+                widgets: ['zoomButton', 'createMark', 'resetBounds'],
+                layers: [
+                    {
+                        {# TENEMENT ENDPOINT #}
+                        url: "{% url 'interactive_map:tenement' permit_state=tenement.permit_state permit_type=tenement.permit_type permit_number=tenement.permit_number %}",
+                    },
+                ]
+            });
+
+            prospectMap.on(InteractiveMap.Event.Mark.created, function (e) {
+                const { marker, lat, lng } = e.detail;
+
+                marker.bindPopup(`
+                                <table>
+                                    <tbody>
+                                        <tr><th>Latitude: </th><td>${lat}</td></tr>
+                                        <tr><th>Longitude: </th><td>${lng}</td></tr>
+                                    </tbody>
+                                </table>
+                            `).openPopup();
+                $('#id_location').val(`${lat} ${lng}`);
+                $('#id_location_input').val(`${lat} ${lng}`);
+            });
+
+            
+            $('#addTargetButton').on('click',function (e) {
+          
+                setTimeout(function(){ 
+                    prospectMap.widgets.createMark.clearLayers();
+                    prospectMap.map.invalidateSize();
+                    prospectMap.resetBounds();
+                }, 200);
+                $('#id_target_id').val('');
+                $('#id_target_name').val('');
+                $('#id_target_description').val('');
+                $('#id_location').val('');
+                $('#id_location_input').val('');
+                $('#addEditTargetForm .modal-header').text('Add Prospect');
+                $('#addEditTargetForm #btnSubmit').text('Add');
+            });
+            $('#target-table').on('click', 'button:has(.fa-pen)', function (e) {
+                let tableRow = $('#target-table').DataTable().row($(this).parents('tr')).data();
+                let location = tableRow['location'].replace(/(\[|\]|,)/gm,'')
+                location = location.trim();
+                
+                $('#id_target_id').val(tableRow['name']);
+                $('#id_target_name').val(tableRow['name']);
+                $('#id_target_description').val(tableRow['description']);
+                $('#id_location').val(location);
+                $('#id_location_input').val(location);
+                $('#addEditTargetForm .modal-header').text('Edit Prospect');
+                $('#addEditTargetForm #btnSubmit').text('Save');
+
+                var coordinates = location.split(" ")
+                prospectMap.widgets.createMark.clearLayers();
+                L.marker(coordinates).addTo(prospectMap.widgets.createMark);
+                setTimeout(function(){ 
+                    prospectMap.map.invalidateSize();
+                    combinedBounds = prospectMap.getCombinedBounds().extend(prospectMap.widgets.createMark.getBounds());
+                    prospectMap.fitBounds(combinedBounds, [])
+                }, 200);
+            });
+
+            // TARGET FORMS
+
+            $('#addEditTargetForm').on('submit', function (e) {
+                e.preventDefault();
+                let $form = $(this);
+                let $table = $('#target-table');
+                let tableRow = $table.DataTable().row($form.attr('row-index'));
+                let url = $('#id_target_id').val() ? location.origin + location.pathname + `post/target/edit/`+tableRow.data()['name'] : location.origin + location.pathname + `post/target/add/`;
+                let $modal = $form.closest('.modal');
+                let $submitBtn = $form.find('[type="submit"]');
+                let submitHtml = $submitBtn.html();
+                
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: $form.serialize(),
+                    beforeSend: function (){
+                        $submitBtn.addSpinner();
+                        const overlay = document.createElement('div');
+                        overlay.classList.add('overlay');
+                        document.body.appendChild(overlay);
+                    },
+                    success: function (response) {
+                        var coordinates = response.data.location.split(" ")
+                        var marker = L.marker(coordinates)
+                        if (turf.booleanIntersects(marker.toGeoJSON(), JSON.parse(response.tenement))) {
+                            console.log('works')
+                            response.data.location = "[ " + coordinates[0] +", " + coordinates[1] + " ]"
+                            if ($('#id_target_id').val()){
+                                $table.DataTable().row($form.attr('row-index')).data(response.data).draw();
+                            }
+                            else{
+                                $table.DataTable().row.add(response.data).draw();
+                            }
+                        }
+                        else{
+                            if ($('#id_target_id').val()){
+                                tableRow.remove().draw();
+                            }
+                        }
+
+                        $modal.modal('hide');
+                        $form.resetForm();  
+                        tenementMap.reload();
+                        
+                    },
+                    error: function (response) {
+                        if(response['responseJSON']){
+                            $form.displayFormErrors(response['responseJSON']);
+                        }
+                        else{
+                            $form.displayFormErrors({'__all__': ['Target with this Project and Name already exists.']});
+                        }
+                        
+                    },
+                    complete: function () {
+                        $submitBtn.removeSpinner(submitHtml);
+                        const overlay = document.querySelector('.overlay');
+                        document.body.removeChild(overlay);
+                    }
+                });
+            });
+
+            $('#addEditTargetModal').on("hidden.bs.modal", function() {
+                $('#addEditTargetForm').resetForm();
+            });
+
+            $('#deleteTargetForm').on('submit', function (e) {
+                e.preventDefault();
+                let $form = $(this);
+                let $table = $('#target-table');
+                let $modal = $form.closest('.modal');
+                let tableRow = $table.DataTable().row($form.attr('row-index'));
+                let formData = new FormData($form[0]);
+                formData.set('name', tableRow.data()['name']);
+
+                $.ajax({
+                    type: 'POST',
+                    url: location.origin + location.pathname + `post/target/delete/`,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        tableRow.remove().draw();
+                        $modal.modal('hide');
+                        $form.resetForm();
+                        tenementMap.reload();
+                        
+                    },
+                    error: function (response) {
+                        $form.displayFormErrors(response['responseJSON']);
+                    }
+                });
+            });
         })
+
+
 
         let previousWidth = $(window).width();
 

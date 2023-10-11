@@ -11,7 +11,7 @@
         <li>
             <a class="dropdown-item" href="{% url 'user:manage' %}">
                 <i class="fas fa-heartbeat fa-sm fa-fw mr-2 text-gray-400"></i>
-                Manage Your Orefox Account
+                Manage Your GeoDesk Account
             </a>
         </li>
         <li>
@@ -19,6 +19,7 @@
         </li>
         {% if request.user.is_authenticated %}
             <li>
+                <!-- href="https://landing.geodesk.ai/"-->
                 <a class="dropdown-item" href="{% url 'user:logout' %}" data-toggle="modal"
                    data-target="#logoutModal">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>

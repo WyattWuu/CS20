@@ -40,6 +40,13 @@
         font-size: 1rem;
       }
 
+      .leaflet-popup-content {
+        font-size: 10px;
+        text-align: center;
+        justify-content: center;
+        display: flex;
+      }
+
       .foliumtooltip {
         font-size: 10px;
       }
@@ -71,12 +78,11 @@
       var targets = "{{targets}}";
       targets = targets.replaceAll("&quot;", '"'); // modify it for javascript
 
-      $.getJSON('get/tenements_json/', function (data) {
-        var project_map = generate_project_map(JSON.parse(tenements), JSON.parse(targets), data);
-        $('#sidebarToggleButton').on('click',function (e) {     
-          setTimeout(function(){project_map.invalidateSize()}, 200);
-        });
+      var project_map = generate_project_map(JSON.parse(tenements), JSON.parse(targets));
+      $('#sidebarToggleButton').on('click',function (e) {     
+        setTimeout(function(){project_map.invalidateSize()}, 200);
       });
     });
+
   </script>
 </html>

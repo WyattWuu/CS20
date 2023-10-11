@@ -4,6 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.core.serializers import serialize
+from django.contrib.gis.geos import GEOSGeometry
 
 from notification.utils.utils import notify_project_members
 from project.forms import CreateTaskForm
@@ -14,6 +16,10 @@ from tms.models import Tenement, WorkProgram
 from main.utils.fields import ChoicesLabelCase
 from django.contrib import messages
 
+import interactive_map.views.main as im_views
+from project.forms import CreateTargetForm
+from tms.models import Target
+from project.models import Project
 
 """Various functions to handle certain post requests. Most of these are used across various pages.
 
@@ -111,27 +117,116 @@ def modify_task(request, tenement, permit_state, permit_type, permit_number):
 
 
 @require_POST
-@has_project_permission(Permission.ADMIN)
+@has_project_permission(Permission.WRITE)
 def add_target(request, tenement, permit_state, permit_type, permit_number):
-    # TODO: Adding target from TMS is problematic, maybe unecessary
-    print(tenement, request.POST)
-    return JsonResponse({}, status=HTTPStatus.NOT_IMPLEMENTED)
+    tenement = Tenement.objects.get(permit_state=permit_state, permit_type=permit_type, permit_number=permit_number)
+    tenement_geojson = serialize("geojson", [tenement], geometry_field="area_polygons", fields=["permit_type", "permit_number"])
+    post_data = request.POST.copy()
+    try:
+        project = Project.objects.prefetch_related('targets').get(tenements__id=tenement.id, members__user=request.user)
+
+    except Exception:
+        print('error adding target')
+        
+    post_data['project'] = project.id
+    lon, lat = map(float, post_data.get('location').split())
+    post_data['area'] = GEOSGeometry(f"POINT({lat} {lon})")
+    target_form = CreateTargetForm(user=request.user, data=post_data or None)
+    if target_form.is_valid():
+        target = target_form.save()
+
+        context = {
+            'data': {
+                'name': target.name,
+                'description': target.description,
+                'location': target.location,
+                'actions': None,
+            },
+            'tenement': tenement_geojson,
+        }
+        messages.success(request, 'Target Created Successfully')
+        # return JsonResponse(context, status=HTTPStatus.OK)
+
+        # Notify members of the project
+        notify_project_members(
+            project=project,
+            user_from=request.user,
+            summary=f"<b>{request.user}</b> created a new target in <b>{project}</b>.",
+            url=reverse('project:dashboard', kwargs={'slug': project.slug})
+        )
+    else:
+        err = ""
+        for field, errors in target_form.errors.items():
+            for error in errors:
+               err += error
+        return JsonResponse(target_form.errors, status=HTTPStatus.BAD_REQUEST)
+    return JsonResponse(context, status=HTTPStatus.OK)
+
+@require_POST
+@has_project_permission(Permission.WRITE)
+def edit_target(request, tenement, permit_state, permit_type, permit_number, target_name):
+    tenement = Tenement.objects.get(permit_state=permit_state, permit_type=permit_type, permit_number=permit_number)
+    tenement_geojson = serialize("geojson", [tenement], geometry_field="area_polygons", fields=["permit_type", "permit_number", "permit_status", "date_lodged", "date_granted", "ahr_name"])
+    
+    try:
+        project = Project.objects.prefetch_related('targets').get(tenements__id=tenement.id, members__user=request.user)
+
+    except Exception:
+        print('error editing target')
+    target = Target.objects.get(project=project, name=target_name)
+    post_data = request.POST.copy()
+    
+    target.name = post_data.get('name')
+    target.location = post_data.get('location')
+    target.description = post_data.get('description')
+    lon, lat = map(float, target.location.split())
+    target.area = GEOSGeometry(f"POINT({lat} {lon})")
+    
+    target.save()
+    print('target save')
+    messages.success(request, 'Target Updated Successfully')
+ 
+    # Return the updated target data as JSON
+    context = {
+            'data': {
+                'name': target.name,
+                'description': target.description,
+                'location': target.location,
+                'actions': None,
+            },
+            'tenement': tenement_geojson,
+        }
+    return JsonResponse(context, status=HTTPStatus.OK)
+
 
 
 @require_POST
 @has_project_permission(Permission.ADMIN)
 def delete_target(request, tenement, permit_state, permit_type, permit_number):
-    # TODO: Delete Target potentially unecessary in TMS
-    print(tenement, request.POST)
-    return JsonResponse({}, status=HTTPStatus.NOT_IMPLEMENTED)
+    try:
+        target_name = request.POST.get('name')
+        try:
+            project = Project.objects.prefetch_related('targets').get(tenements__id=tenement.id, members__user=request.user)
 
+        except Exception:
+            print('error deleting target')
+        target = Target.objects.get(project=project, name=target_name)
+        target.delete()
+        messages.success(request, 'Target Deleted Successfully')
 
-@require_POST
-@has_project_permission(Permission.ADMIN)
-def modify_target(request, tenement, permit_state, permit_type, permit_number):
-    # TODO: Modify Target potentially unecessary in TMS
-    print(tenement, request.POST)
-    return JsonResponse({}, status=HTTPStatus.NOT_IMPLEMENTED)
+        # Notify members of the project
+        notify_project_members(
+            project=project,
+            user_from=request.user,
+            summary=f"<b>{request.user}</b> deleted target <b>{target}</b> from <b>{project}</b>.",
+            url=reverse('project:dashboard', kwargs={'slug': project.slug})
+        )
+
+    except ObjectDoesNotExist as e:
+        print(e)
+        return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+
+    return JsonResponse({}, status=HTTPStatus.OK)
 
 
 @require_POST

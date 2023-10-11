@@ -20,167 +20,167 @@ from project.utils.decorators import has_project_permission
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 
 
-def create_debug_objects(request, project):
-    Parcel.objects.all().delete()
-
-    def M(geom):
-        if isinstance(geom, Polygon):
-            geom = MultiPolygon([geom])
-
-        return geom
-
-    # Parcel
-    new_parcels = [
-        Parcel(name="a", lot=73, plan="GEORGE WAY", tenure="Beetles", geometry=M(
-            GEOSGeometry(
-                '{"type": "Polygon", "coordinates": [ [ [ 152.802046115000053, -27.371197363999954 ], '
-                '[ 152.802128377000031, -27.371642565999935 ], [ 152.80042878800009, -27.372242642999936 ], '
-                '[ 152.800253558000122, -27.372314421999931 ], [ 152.800342026000067, -27.371760157999972 ], '
-                '[ 152.800975660000063, -27.371536491999962 ], [ 152.801704268000094, -27.371277628999962 ], '
-                '[ 152.802046115000053, -27.371197363999954 ] ] ]}'
-            )
-        )
-               ),
-        Parcel(name="b", lot=42, plan="POTATO VILLAGE", tenure="Starch Free", geometry=M(
-            GEOSGeometry(
-                '{"type": "Polygon", "coordinates": [ [ [ 152.802013161000104, -27.371019309999951 ], '
-                '[ 152.802046115000053, -27.371197363999954 ], [ 152.801704268000094, -27.371277628999962 ], '
-                '[ 152.800975660000063, -27.371536491999962 ], [ 152.800342026000067, -27.371760157999972 ], '
-                '[ 152.800253558000122, -27.372314421999931 ], [ 152.798966366000059, -27.372841602999983 ], '
-                '[ 152.798769082000035, -27.372881492999966 ], [ 152.79705668500003, -27.373228138999934 ], '
-                '[ 152.79583883500004, -27.373530005999953 ], [ 152.794812026000045, -27.37356280399996 ], '
-                '[ 152.794229249000068, -27.373905388999958 ], [ 152.79326095700003, -27.374304180999957 ], '
-                '[ 152.791985596000018, -27.373340902999928 ], [ 152.791864025000109, -27.373023448999959 ], '
-                '[ 152.792053970000097, -27.371783619999974 ], [ 152.791469852000091, -27.370661964999954 ], '
-                '[ 152.791429865000055, -27.370111031999954 ], [ 152.791554178000069, -27.369184126999983 ], '
-                '[ 152.791907648000119, -27.367133883999941 ], [ 152.793128277000051, -27.36731894199994 ], '
-                '[ 152.793407875000071, -27.367354100999933 ], [ 152.793245802000115, -27.371205000999964 ], '
-                '[ 152.797433297000111, -27.371466500999929 ], [ 152.80046453600005, -27.371658882999952 ], '
-                '[ 152.800956319000079, -27.371485194999934 ], [ 152.802013161000104, -27.371019309999951 ] ] ]}'
-            )
-        )
-               ),
-    ]
-
-    Parcel.objects.bulk_create(new_parcels)
-
-    # We don't do this with bulk create since bulk create bypasses the save method and won't run signals
-    for parcel in Parcel.objects.all():
-        ProjectParcel.objects.create(parcel=parcel, project=project, user_updated=request.user)
-
-
-@django_query_analyze
-def render_lms_data(request, project):
-    """Renders all the LMS data for a particular project as HTML."""
-    # TODO: Make it prettier in the "demo_interface" or change how it's done altogether.
-
-    # parcels = ProjectParcel.objects.filter_project_area(project=project)\
-    parcels = ProjectParcel.objects.filter(project=project) \
-        .select_related('parcel', 'user_updated') \
-        .prefetch_related(
-        'history',
-        'history__user',
-        'history__target',
-        'owners',
-        'owners__history',
-        'owners__history__user',
-        'owners__history__target',
-        'owners__correspondence',
-        'owners__correspondence__owner',
-        'owners__correspondence__files',
-        'owners__correspondence__user',
-        'owners__correspondence__user_updated',
-        'owners__tasks',
-        'owners__tasks__owner',
-        'owners__tasks__files',
-        'owners__tasks__user',
-        'owners__tasks__user_updated',
-        'owners__reminders',
-        'owners__reminders__owner',
-        'owners__reminders__user',
-        'owners__reminders__user_updated',
-        'owners__reminders__files',
-        Prefetch('owners',
-                 # Returns either the bulk mail target for the parcel or the first available owner
-                 queryset=ParcelProjectOwnerRelationship.objects.filter(
-                     Q(parcel_id=OuterRef('parcel_id'), is_mail_target=True))
-                 )
-    ).annotate(
-        area=Area("parcel__geometry"),
-    ).all()
-
-    context = {
-        'project': project,
-        'parcels': parcels,
-    }
-
-    return render_to_string("lms/demo_interface.html", context, request=request)
+# def create_debug_objects(request, project):
+#     Parcel.objects.all().delete()
+#
+#     def M(geom):
+#         if isinstance(geom, Polygon):
+#             geom = MultiPolygon([geom])
+#
+#         return geom
+#
+#     # Parcel
+#     new_parcels = [
+#         Parcel(name="a", lot=73, plan="GEORGE WAY", tenure="Beetles", geometry=M(
+#             GEOSGeometry(
+#                 '{"type": "Polygon", "coordinates": [ [ [ 152.802046115000053, -27.371197363999954 ], '
+#                 '[ 152.802128377000031, -27.371642565999935 ], [ 152.80042878800009, -27.372242642999936 ], '
+#                 '[ 152.800253558000122, -27.372314421999931 ], [ 152.800342026000067, -27.371760157999972 ], '
+#                 '[ 152.800975660000063, -27.371536491999962 ], [ 152.801704268000094, -27.371277628999962 ], '
+#                 '[ 152.802046115000053, -27.371197363999954 ] ] ]}'
+#             )
+#         )
+#                ),
+#         Parcel(name="b", lot=42, plan="POTATO VILLAGE", tenure="Starch Free", geometry=M(
+#             GEOSGeometry(
+#                 '{"type": "Polygon", "coordinates": [ [ [ 152.802013161000104, -27.371019309999951 ], '
+#                 '[ 152.802046115000053, -27.371197363999954 ], [ 152.801704268000094, -27.371277628999962 ], '
+#                 '[ 152.800975660000063, -27.371536491999962 ], [ 152.800342026000067, -27.371760157999972 ], '
+#                 '[ 152.800253558000122, -27.372314421999931 ], [ 152.798966366000059, -27.372841602999983 ], '
+#                 '[ 152.798769082000035, -27.372881492999966 ], [ 152.79705668500003, -27.373228138999934 ], '
+#                 '[ 152.79583883500004, -27.373530005999953 ], [ 152.794812026000045, -27.37356280399996 ], '
+#                 '[ 152.794229249000068, -27.373905388999958 ], [ 152.79326095700003, -27.374304180999957 ], '
+#                 '[ 152.791985596000018, -27.373340902999928 ], [ 152.791864025000109, -27.373023448999959 ], '
+#                 '[ 152.792053970000097, -27.371783619999974 ], [ 152.791469852000091, -27.370661964999954 ], '
+#                 '[ 152.791429865000055, -27.370111031999954 ], [ 152.791554178000069, -27.369184126999983 ], '
+#                 '[ 152.791907648000119, -27.367133883999941 ], [ 152.793128277000051, -27.36731894199994 ], '
+#                 '[ 152.793407875000071, -27.367354100999933 ], [ 152.793245802000115, -27.371205000999964 ], '
+#                 '[ 152.797433297000111, -27.371466500999929 ], [ 152.80046453600005, -27.371658882999952 ], '
+#                 '[ 152.800956319000079, -27.371485194999934 ], [ 152.802013161000104, -27.371019309999951 ] ] ]}'
+#             )
+#         )
+#                ),
+#     ]
+#
+#     Parcel.objects.bulk_create(new_parcels)
+#
+#     # We don't do this with bulk create since bulk create bypasses the save method and won't run signals
+#     for parcel in Parcel.objects.all():
+#         ProjectParcel.objects.create(parcel=parcel, project=project, user_updated=request.user)
 
 
-@has_project_permission()
-def lms_project(request, project, slug):
-    """View specific to a kind of project"""
+# @django_query_analyze
+# def render_lms_data(request, project):
+#     """Renders all the LMS data for a particular project as HTML."""
+#     # TODO: Make it prettier in the "demo_interface" or change how it's done altogether.
+#
+#     # parcels = ProjectParcel.objects.filter_project_area(project=project)\
+#     parcels = ProjectParcel.objects.filter(project=project) \
+#         .select_related('parcel', 'user_updated') \
+#         .prefetch_related(
+#         'history',
+#         'history__user',
+#         'history__target',
+#         'owners',
+#         'owners__history',
+#         'owners__history__user',
+#         'owners__history__target',
+#         'owners__correspondence',
+#         'owners__correspondence__owner',
+#         'owners__correspondence__files',
+#         'owners__correspondence__user',
+#         'owners__correspondence__user_updated',
+#         'owners__tasks',
+#         'owners__tasks__owner',
+#         'owners__tasks__files',
+#         'owners__tasks__user',
+#         'owners__tasks__user_updated',
+#         'owners__reminders',
+#         'owners__reminders__owner',
+#         'owners__reminders__user',
+#         'owners__reminders__user_updated',
+#         'owners__reminders__files',
+#         Prefetch('owners',
+#                  # Returns either the bulk mail target for the parcel or the first available owner
+#                  queryset=ParcelProjectOwnerRelationship.objects.filter(
+#                      Q(parcel_id=OuterRef('parcel_id'), is_mail_target=True))
+#                  )
+#     ).annotate(
+#         area=Area("parcel__geometry"),
+#     ).all()
+#
+#     context = {
+#         'project': project,
+#         'parcels': parcels,
+#     }
+#
+#     return render_to_string("lms/demo_interface.html", context, request=request)
 
-    # Parcel.objects.filter_project_area(project)
-    # create_debug_objects(request, project)
 
-    land_parcels = ProjectParcel.objects.filter(project=project).select_related('parcel').prefetch_related(
-        Prefetch('owners',
-                 # Returns either the bulk mail target for the parcel or the first available owner
-                 queryset=ParcelProjectOwnerRelationship.objects.filter(
-                     Q(parcel_id=OuterRef('parcel_id'), is_mail_target=True)
-                 ), to_attr='mail_targets'
-                 )
-    )
-    #     Prefetch('owners',
-    #              # Returns either the bulk mail target for the parcel or the first available owner
-    #              queryset=ParcelOwner.objects.filter(
-    #                  id__in=Subquery(
-    #                      ParcelOwner.objects.filter(
-    #                          parcel_id=OuterRef('parcel_id')
-    #                      ).order_by('-bulk_mail_target', '-date_created').values('id')[:1]
-    #                  )
-    #              ), to_attr='mail_target'
-    #              )
-    # )
+# @has_project_permission()
+# def lms_project(request, project, slug):
+#     """View specific to a kind of project"""
+#
+#     # Parcel.objects.filter_project_area(project)
+#     # create_debug_objects(request, project)
+#
+#     land_parcels = ProjectParcel.objects.filter(project=project).select_related('parcel').prefetch_related(
+#         Prefetch('owners',
+#                  # Returns either the bulk mail target for the parcel or the first available owner
+#                  queryset=ParcelProjectOwnerRelationship.objects.filter(
+#                      Q(parcel_id=OuterRef('parcel_id'), is_mail_target=True)
+#                  ), to_attr='mail_targets'
+#                  )
+#     )
+#     #     Prefetch('owners',
+#     #              # Returns either the bulk mail target for the parcel or the first available owner
+#     #              queryset=ParcelOwner.objects.filter(
+#     #                  id__in=Subquery(
+#     #                      ParcelOwner.objects.filter(
+#     #                          parcel_id=OuterRef('parcel_id')
+#     #                      ).order_by('-bulk_mail_target', '-date_created').values('id')[:1]
+#     #                  )
+#     #              ), to_attr='mail_target'
+#     #              )
+#     # )
+#
+#     parcel_context = render_to_string("lms/parcel.html", {
+#         'project': project,
+#         'items': land_parcels,
+#     }, request=request)
+#
+#     context = {
+#         'project': project,
+#         # 'land_parcel': render_lms_data(request, project),
+#         'parcel_content': parcel_context,
+#         'owner_form': ParcelOwnerForm(request, project),
+#         'note_form': LandOwnerNoteForm(request, project),
+#         'correspondence_form': LandOwnerCorrespondenceForm(request, project),
+#         'task_form': LandOwnerTaskForm(request, project),
+#         'reminder_form': LandParcelOwnerReminderForm(request, project),
+#     }
+#
+#     return render(request, "lms/lms_base.html", context)
 
-    parcel_context = render_to_string("lms/parcel.html", {
-        'project': project,
-        'items': land_parcels,
-    }, request=request)
 
-    context = {
-        'project': project,
-        # 'land_parcel': render_lms_data(request, project),
-        'parcel_content': parcel_context,
-        'owner_form': ParcelOwnerForm(request, project),
-        'note_form': LandOwnerNoteForm(request, project),
-        'correspondence_form': LandOwnerCorrespondenceForm(request, project),
-        'task_form': LandOwnerTaskForm(request, project),
-        'reminder_form': LandParcelOwnerReminderForm(request, project),
-    }
-
-    return render(request, "lms/lms_base.html", context)
-
-
-@has_project_permission(Permission.ADMIN)
-def modify_parcel(request, project, slug):
-    """Modifying the ProjectParcel. Takes a POST request where the contents of the dictionary are fields to in the
-    model to be updated."""
-    action = request.META.get('HTTP_ACTION', None)
-    parcel_id = request.POST.get('parcel', None)
-
-    try:
-        parcel = ProjectParcel.objects.get(project=project, id=parcel_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-    else:
-        # TODO: Update fields provided, there are no other actions for this as admin don't have control over
-        #   which parcels exist or dont exist.
-        parcel.active = not parcel.active
-        parcel.save()
-
-    return JsonResponse({'html': render_lms_data(request, project)}, status=HTTPStatus.OK)
+# @has_project_permission(Permission.ADMIN)
+# def modify_parcel(request, project, slug):
+#     """Modifying the ProjectParcel. Takes a POST request where the contents of the dictionary are fields to in the
+#     model to be updated."""
+#     action = request.META.get('HTTP_ACTION', None)
+#     parcel_id = request.POST.get('parcel', None)
+#
+#     try:
+#         parcel = ProjectParcel.objects.get(project=project, id=parcel_id)
+#     except ObjectDoesNotExist:
+#         return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+#     else:
+#         # TODO: Update fields provided, there are no other actions for this as admin don't have control over
+#         #   which parcels exist or dont exist.
+#         parcel.active = not parcel.active
+#         parcel.save()
+#
+#     return JsonResponse({'html': render_lms_data(request, project)}, status=HTTPStatus.OK)
 
 
 def handle_lms_request(request, action: str, project: Project, model_class, model_form, model_query_dict: dict,

@@ -15,10 +15,10 @@ ul {
     padding-left: 10px;
 }
 
-.unlinked{
-    color:gray
-}
-
 span{
     white-space:initial;
+}
+
+.unlinked{
+    color:gray
 }

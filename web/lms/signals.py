@@ -1,6 +1,7 @@
 
 from django.contrib.gis.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import PositiveSmallIntegerField
 from django.db.models.signals import pre_save, post_save
 from django.contrib.gis.geos import MultiPolygon
 from django.dispatch import receiver
@@ -98,6 +99,21 @@ def on_parcel_project_create_for_history(sender, instance, created, **kwargs):
     elif instance.__updated_fields:
         # field_array_str = ', '.join(field.replace('_', ' ').title() for field in instance.__updated_fields)
         # summary = f"{field_array_str} updated by {instance.user_updated}"
+        
+        # Update updated_fields from integer to choice text
+        choice_fields = { field.name: field for field in instance._meta.fields if isinstance(field, PositiveSmallIntegerField)}
+        for updated_field in instance.__updated_fields:
+            if updated_field['name'].lower() in choice_fields:
+                field = choice_fields[updated_field['name'].lower()]
+                updated_field['from'] = field.choices[updated_field['from']][1]
+                updated_field['to'] = field.choices[updated_field['to']][1]
+
+        # Update fields
+        for updated_field in instance.__updated_fields:
+            if updated_field['name'] == 'User Updated':
+                instance.__updated_fields.remove(updated_field)
+        
+
         modified_json =json.loads(json.dumps(instance.__updated_fields, indent=4, sort_keys=True, default=str))
     else:
         modified_json = None

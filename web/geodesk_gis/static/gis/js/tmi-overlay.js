@@ -163,9 +163,7 @@ $(document).ready(function () {
 	L.control.scale().addTo(map);
 	map.doubleClickZoom.disable(); 
 	map.on('dblclick', function(ev) {
-			console.log(parseInt($("[name = 'process_id']").val()))
         if (parseInt($("[name = 'process_id']").val())  < 2){
-        console.log(ev.latlng)
         lat_min = ev.latlng.lat - size;
         lat_max = ev.latlng.lat + size;
         long_min = ev.latlng.lng - (size / Math.cos(ev.latlng.lat*Math.PI/180));
@@ -174,10 +172,8 @@ $(document).ready(function () {
         if (!map.hasLayer(polygon1)) {
             polygon1 = L.polygon(latlngs, {color: 'red'}).addTo(map)
             polygon1.on('click', function() {
-            console.log(map.hasLayer(polygon1))
             polygon1.remove();
             $("#process_id").val(parseInt($("[name = 'process_id']").val()) - 1);
-            console.log(map.hasLayer(polygon1))
             })
         }
         else if (polygon2 == null) {
@@ -193,7 +189,6 @@ $(document).ready(function () {
 	})
   let submitBtn =  $(document).find(".submit");
   $(document).find(".submit").click(function (e) {
-    console.log("enter click function")
     if(polygon1 == null || polygon2 ==null){
       $('#flash-message').css('display','block')
       $('#flash-message').html("<span class='alert alert-danger py-1' >Select Two areas on the map </span>")
@@ -234,7 +229,6 @@ $(document).ready(function () {
         $('#view_task_modal').modal('show');
         $('#view_task_modal').click(function (event) 
         {
-          console.log(event.currentTarget)
           if($(event.target).closest("#modal_body").length === 0) {
             $('#view_task_modal').modal('hide');
           }     
@@ -243,7 +237,6 @@ $(document).ready(function () {
       error: function (data) {
         submitBtn.prop("disabled", false)
         submitBtn.html('Submit')
-        console.log("in error"+data['statusText'])
         $('#flash-message').css('display','block')
         $('#flash-message').html("<span class='alert alert-danger py-1' >Error : " +data['statusText'] + "</span>")
       },

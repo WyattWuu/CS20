@@ -1,3 +1,4 @@
+import hashlib
 import json
 import uuid
 from datetime import datetime
@@ -6,7 +7,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
-from django.contrib.gis.geos import MultiPolygon
+from django.contrib.postgres.indexes import GistIndex, BloomIndex
+from django.core.serializers import serialize
+from django.db.models.functions import SHA256
+from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 from django.contrib.gis.db.models.functions import Area
 from django.core import serializers
 from django.core.exceptions import ValidationError
@@ -22,6 +26,25 @@ from tms.models import AustraliaStateChoices
 User = get_user_model()
 
 
+def get_geometry_hash(geometry):
+    # Calculate the MD5 hash
+    try:
+        geo_json = geometry.json.encode()
+        md5_hash = hashlib.md5(geo_json).digest()
+    except Exception as e:
+        # TODO: Handle these appropriately
+        return None
+
+    return bytes(md5_hash)
+
+def default_geometry_hash():
+    # Define a default geometry (you can change this to your desired default)
+    default_geometry = GEOSGeometry('POINT(0 0)')
+
+    # Calculate the hash using the get_geometry_hash function
+    return get_geometry_hash(default_geometry)
+
+
 class Parcel(models.Model):
     """A land parcel is described by a lot plan number, the number can be used as lot/plan"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -31,19 +54,26 @@ class Parcel(models.Model):
     plan = models.CharField(max_length=10, null=True, blank=True)
     tenure = models.CharField(max_length=40, null=True, blank=True)  # tenure or land_use is the category of the land parcel e.g., Freehold, lands lease or state forrest
 
-    segment_parcel = models.CharField(max_length=40, null=True, blank=True, verbose_name="Segment Parcel")
-    shire_name = models.CharField(max_length=40, null=True, blank=True, verbose_name="Local Government")
+    lot_area = models.FloatField(null=True, blank=True, verbose_name="Area")
+    exl_lot_area = models.FloatField(null=True, blank=True, verbose_name="Excluded Area")
+    lot_volume = models.FloatField(null=True, blank=True, verbose_name="Lot Volume")
+
     feature_name = models.CharField(max_length=60, null=True, blank=True, verbose_name="Name")
     alias_name = models.CharField(max_length=400, null=True, blank=True, verbose_name="Alias Name")
 
-    locality = models.CharField(max_length=30, null=True, blank=True)
-    parcel_type = models.CharField(max_length=24, null=True, blank=True)
-    cover_type = models.CharField(max_length=10, null=True, blank=True)
-    accuracy_code = models.CharField(max_length=40, null=True, blank=True)
+    accuracy_code = models.CharField(max_length=40, null=True, blank=True, verbose_name="Accuracy")
+    surv_index = models.CharField(max_length=1, null=True, blank=True, verbose_name="Surveyed")
+
+    cover_type = models.CharField(max_length=10, null=True, blank=True, verbose_name="Coverage Type")
+    parcel_type = models.CharField(max_length=24, null=True, blank=True, verbose_name="Parcel Type")
+
+    locality = models.CharField(max_length=30, null=True, blank=True, verbose_name="Locality")
+    shire_name = models.CharField(max_length=40, null=True, blank=True, verbose_name="Local Government Area")
 
     smis_map = models.CharField(max_length=100, null=True, blank=True)
 
-    geometry = models.GeometryField()
+    geometry = models.GeometryField(editable=False)
+    geometry_hash = models.BinaryField(unique=True, editable=False, db_index=True, default=default_geometry_hash)
 
     objects = LandParcelManager()
 
@@ -53,6 +83,9 @@ class Parcel(models.Model):
 
     def __str__(self):
         return self.lot_plan
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
     def area(self):
         # TODO: This is probably not right, not sure how to convert to SQM, has something to do with projection

@@ -1,3 +1,41 @@
+// Funtion that handles the collapse and opening of new accordian style side navigation menu
+
+$('nav > ul > li > a').on('click', function(e) {
+    e.stopPropagation();
+      $('.side-menu-sub-item').slideUp();
+      $(this).next().is(":visible") || $(this).next().slideDown();
+});
+
+// Adds an 'active' class to the main buttons of the side navigation bar
+$(document).ready(function() {
+    $('.side-main-btn').click(function() {
+    	$('.side-main-btn').removeClass('active');
+    	$(this).addClass('active');
+   });
+});
+
+const sideNavSubBtn = document.querySelectorAll(".side-menu-sub-item");
+
+sideNavSubBtn.forEach(link => {
+    link.addEventListener("click", function(event) {
+        // Retrieve and log the ID of the clicked anchor tag
+        const clickedID = this.id;
+
+        // Store the ID in localStorage
+        localStorage.setItem("lastClickedID", clickedID);
+    });
+});
+
+const lastClickedID = localStorage.getItem("lastClickedID");
+
+if (lastClickedID) {
+    //console.log(`#${lastClickedID}`);
+    $(`#${lastClickedID}`).slideDown();
+    localStorage.clear()    
+}
+
+// =================================================================
+
 // Collapse click
 $("[data-bs-toggle=sidebar-colapse]").click(function () {
     SidebarCollapse();
@@ -150,8 +188,6 @@ $(function ($) {
                 // Django form errors won't have the 'message' key
                 let message = (typeof error === 'object' && 'message' in error) ? error.message : error
 
-                console.log(key === '__all__');
-
                 if ($errorElement.length) {
                     $errorElement.text(message);
                 } else {
@@ -254,3 +290,16 @@ $('#createProjectForm').on('submit', function (e) {
         }
     });
 });
+
+const dropdowns = [["data-management", 'data-dropdown'], ["EMS", "exploration-dropdown"]]    
+
+dropdowns.forEach((pair) => {
+    $("#"+pair[0]).on("click", () => {
+        if($('.'+pair[1]).css('display') == 'block'){
+            $('.'+pair[1]).css({ "display": "none" });
+        }
+        else {
+            $('.'+pair[1]).css({ "display": "block"});
+        }    
+    })
+})

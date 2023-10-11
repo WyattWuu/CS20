@@ -44,7 +44,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('slug', 'name', 'owner', 'credits', 'disk_space_usage', 'tenement_count', 'member_count', 'created_at', 'last_modified')  # , 'biller'
     search_fields = ('name', 'slug', 'owner', 'locality')
     readonly_fields = ('disk_space_usage', 'files_count',)
-    fields = ('name', 'slug', 'state', 'owner', 'objective', 'locality', 'credits', 'files_count', 'disk_space_usage',)
+    fields = ('name', 'slug', 'state', 'owner', 'purpose', 'locality', 'credits', 'files_count', 'disk_space_usage',)
     exclude = ('files',)
     inlines = [
         ProjectMemberAdmin,

@@ -1,52 +1,77 @@
 from http import HTTPStatus
-
+import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Prefetch, Count
-from django.http import HttpResponseNotFound, JsonResponse
+from django.http import HttpResponseNotFound, JsonResponse, QueryDict
 from django.shortcuts import render, redirect
 from django.utils.formats import localize
 from project.utils.post import create_project
 from main.utils.query_analyze import django_query_analyze
 from media_file.forms import CreateMultipleMediaFileForm
 from media_file.models import MediaFile
-from project.forms import CreateTargetForm, CreateTaskForm, InviteUserForm, CreateProjectForm
+from project.forms import CreateTargetForm, CreateTaskForm, InviteUserForm, CreateProjectForm, RegionForm
 from project.models import Project, Permission,ProjectMember
 from project.utils.decorators import has_project_permission
 from tms.forms import AddTenementForm
 from tms.models import Tenement, TenementTask
 from django.contrib import messages
-from interactive_map import views as im_views
+from django.contrib.gis.geos import GEOSGeometry
+from django.core.serializers import serialize
+from .forms import RegionForm
+from .model_choices import CountryChoices, StateChoices
 
 User = get_user_model()
 
-
 @login_required
 def new_project(request):
-  print("fullPath",request.get_full_path())
-  if request.method == 'POST':
-        form = CreateProjectForm(request.POST)
-        if form.is_valid():
-            # process the form data
-            project = form.save(commit=False)
-            project.owner = request.user
-            project.save()
-            print("pr",project.id)
-            ProjectMember.objects.create(project=project, user=request.user, permission=Permission.OWNER)
-            messages.success(request,"Project Created Successfully")
-            return redirect('project:index')
-        #messages.success(request, 'Project Created Successfully')
-        else:
-            #messages.error(request, form.errors)
-            print("error", form.errors)
-            #return redirect("project:new_project")
-            #return JsonResponse({"message" : form.errors}, status=HTTPStatus.BAD_REQUEST)
+    region_form = RegionForm()
+    form = CreateProjectForm(initial={'country': CountryChoices.Australia})
+    if request.method == 'POST':
+        if 'region_form_submit' in request.POST:
+            region_form = RegionForm(request.POST)
+            if 'country' in request.POST:
+                
+                country = request.POST['country']
+                state_choices = StateChoices.CHOICES.get(country, [])
+                region_form.fields['state'].choices = [(code, name) for code, name in state_choices]
+
+        elif 'project_form_submit' in request.POST:
+            country_Code = request.POST.get('hiddenCodeCountry')
+            state_Code = request.POST.get('hiddenCodeState')    
+            mutable_post = QueryDict(request.body.decode('utf-8')).copy()
+            mutable_post['country'] = country_Code
+            mutable_post['state'] = state_Code
+            form = CreateProjectForm(mutable_post)
+            if form.is_valid():
+                # process the form data
+                project = form.save(commit=False)
+                project.owner = request.user
+                project.save()
+                print("pr",project.id)
+                ProjectMember.objects.create(project=project, user=request.user, permission=Permission.OWNER)
+                messages.success(request,"Project Created Successfully")
+                return redirect('project:index')
+                #messages.success(request, 'Project Created Successfully')
+            else:
+                #messages.error(request, form.errors)
+                print("error", form.errors)
+                #return redirect("project:new_project")
+                #return JsonResponse({"message" : form.errors}, status=HTTPStatus.BAD_REQUEST)
     
   
-  else:
-        form = CreateProjectForm()
-  return render(request, 'project/new_project.html', {'form': form})
+    else:
+            form = CreateProjectForm()
+    return render(request, 'project/new_project.html', {'region_form': region_form, 'form': form})
+
+
+def get_states(request):
+    country_name = request.POST.get('country_name')
+    states = StateChoices.CHOICES.get(country_name, [])
+    state_list = [{'code': code, 'name': name} for code, name in states]
+    return JsonResponse({'states': state_list})
+
 
 @login_required
 def project_index(request):
@@ -62,6 +87,29 @@ def project_index(request):
     #     "leaveProjectForm": DeleteMemberForm(instance=request.user),
     #     'deleteReportForm': UUIDForm(js=('/static/pwc/js/delete_report_form.js',)),
     # })
+
+
+@login_required
+def my_projects(request):
+    return render(request, 'my_projects/my_projects.html', {
+        'inviteUserForm': InviteUserForm(),
+        'addTenementForm': AddTenementForm(request.user),
+    })
+
+@login_required
+def my_tenements(request):
+    return render(request, 'my_tenements/my_tenements.html', {
+        'inviteUserForm': InviteUserForm(),
+        'addTenementForm': AddTenementForm(request.user),
+    })
+
+@login_required
+def project_kms_view(request):
+    return render(request, 'kms_view/kms_view.html')
+
+@login_required
+def project_lms_view(request):
+    return render(request, 'lms_view/lms_view.html')
 
 
 @has_project_permission(Permission.READ, allow_sudo=True)
@@ -100,6 +148,7 @@ def project_dashboard(request, project, slug):
             'createTargetForm': CreateTargetForm(instance=project, user=request.user),
             'inviteUserForm': InviteUserForm(inviter=request.user, project=project),
         }}
+        
 
     return render(request, "project/project_dashboard.html", context)
 
@@ -111,7 +160,6 @@ def get_projects(request):
         status=HTTPStatus.OK
     )
 
-
 @login_required
 def get_tenements(request):
     """Retrieves ALL of a users Tenements in JSON format."""
@@ -119,7 +167,6 @@ def get_tenements(request):
         Tenement.objects.to_datatable(request, project__members__user=request.user),
         status=HTTPStatus.OK
     )
-
 
 @has_project_permission()
 def get_project_tenements(request, project: Project, slug):
@@ -129,33 +176,42 @@ def get_project_tenements(request, project: Project, slug):
         status=HTTPStatus.OK
     )
 
+@has_project_permission()
+def get_project_map(request, project: Project, slug):
+    return render(request, "project/project_map.html",
+                  {'slug': slug,}, content_type='application/json')
+
 
 @has_project_permission()
 def get_targets(request, project: Project, slug):
     
-    tenements = project.tenements.all()
-
-    project_tenements = [{
+    target_data= []
+    
+    targets = project.targets.all()
+    
+    for target in targets:
+        lon, lat = map(float, target.location.split())
+        target_area = GEOSGeometry(f"POINT({lat} {lon})")
+        
+        overlapping_tenements = project.tenements.filter(
+            area_polygons__intersects=target_area
+            )
+        
+        target_permits = [{
                 'type': tenement.permit_type,
                 'number': tenement.permit_number,
                 'slug': tenement.get_absolute_url(),
-        } for tenement in tenements]
-    
-    targets = project.targets.all()
-
-    context = {
-        'data': [{
-            'permit': {'slug': None, 'type': None, 'number': None},
+        } for tenement in overlapping_tenements]
+        
+        target_data.append({
+            'permit': target_permits,
             'name': target.name,
             'description': target.description,
             'location': target.location,
             'actions': None,
-        } for target in targets],
-        'tenement_data': im_views.get_tenements_data(),
-        'project_tenements': project_tenements,
-    }
+        })
 
-    return JsonResponse(context, status=HTTPStatus.OK)
+    return JsonResponse({'data': target_data,}, status=HTTPStatus.OK)
 
 
 @has_project_permission()

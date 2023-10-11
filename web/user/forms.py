@@ -15,11 +15,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import validate_email
 
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.forms import  SetPasswordForm, PasswordResetForm
+from django.contrib.auth.forms import SetPasswordForm, PasswordResetForm
 from django.core.exceptions import ValidationError
 
 
-#class RegistrationForm(UserCreationForm):
+# class RegistrationForm(UserCreationForm):
 #    """
 #    User Registration Form, extends django-auth form
 #    """
@@ -42,7 +42,6 @@ from django.core.exceptions import ValidationError
 #             field.widget.attrs['class'] = 'form-control'
 
 
-
 # class SignupForm(allauth_forms.SignupForm):
 #     first_name = dj_forms.CharField(
 #         label=_("First Name"),
@@ -58,25 +57,21 @@ from django.core.exceptions import ValidationError
 #     )
 
 
-
-
-
-
-
 class RegistrationForm(UserCreationForm):
-    first_name= forms.CharField( widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name','autocomplete':"off",}))
-    last_name= forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
-    company= forms.CharField( widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company'}))
-  
-    email = forms.EmailField( widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email','autocomplete':"off",'autofocus':False}))
-    password1 = forms.CharField( widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password','autocomplete':"off",'autofocus':False}))
-  
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name', 'autocomplete': "off", }))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}))
+    company = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company'}))
+
+    email = forms.EmailField(widget=forms.EmailInput(
+        attrs={'class': 'form-control', 'placeholder': 'Email', 'autocomplete': "off", 'autofocus': False}))
+    password1 = forms.CharField(widget=forms.PasswordInput(
+        attrs={'class': 'form-control', 'placeholder': 'Password', 'autocomplete': "off", 'autofocus': False}))
+
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'company','password1', 'password2')
+        fields = ('first_name', 'last_name', 'email', 'company', 'password1', 'password2')
 
-  
-  
 
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(widget=forms.EmailInput())
@@ -110,10 +105,12 @@ class LoginForm(AuthenticationForm):
             params={'username': self.username_field.verbose_name},
         )
 
+
 class SetPasswordForm(SetPasswordForm):
     class Meta:
         model = User
         fields = ['new_password1', 'new_password2']
+
 
 class PasswordResetForm(PasswordResetForm):
     def __init__(self, *args, **kwargs):

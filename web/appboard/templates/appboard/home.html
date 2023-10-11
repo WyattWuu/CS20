@@ -9,7 +9,7 @@
 {% block content %}
 
 {% if messages %}
-<div id="flash-message" class="alert alert-success text-sm p-2 ms-4"  >
+<div id="flash-message" class="alert alert-success text-md p-3 ms-4"  >
     {% for message in messages %}
         {{ message }}
     {% endfor %}
@@ -20,14 +20,43 @@
     <div class="container-fluid mb-4 content-margin-top-offest">
       
         <div class="container">
-            <h4 class="mb-4 text-ofx-blue">My Dashboard<i class="ms-2 fas fa-fw fa-tachometer-alt"></i></h4>
+            <h4 class="mb-2 text-ofx-blue">My Dashboard<i class="ms-2 fas fa-fw fa-tachometer-alt"></i></h4>
+            <div id="title-divider" class="mb-4"></div>
             <div class="row">
+                {% comment %}
+            {# TODO: RE-ADD STATISTICS BOX AFTER DEMO #}
+
                 <div class="col-lg-4 col-md-6 col-sm-12 my-3">
                     <div class="card shadow h-100">
                         <div class="card-header">
-                            <h5>My Tasks</h5>
+                            <h5>Activity Manager</h5>
                         </div>
                         <div class="card-body">
+                        </div>
+                    </div>
+                </div>
+                {% endcomment %}
+                <div class="col-lg-4 col-md-6 col-sm-12 my-3">
+                    <div class="card shadow h-100">
+                        <div class="card-header">
+                            <h5>My Apps</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if subscriptions and subscriptions|length > 0  %}
+                            <ul>
+                            {% for subscription in subscriptions %} 
+                              {% if subscription.status == "PAUSED" %}
+                                  <li>  <div class="pause-sub cursor-pointer btn text-ofx-red" data-toggle="modal" data-target="#subPauseModal" style="cursor:pointer">                    
+                                    {{subscription.application.name}}</div></li>
+                              {% else %}
+                                <li> <a href={{subscription.application.app_url}} class="btn">{{subscription.application.name}}</a></li>
+                              {% endif %}
+                            {% endfor %}
+                           
+                            </ul>
+                             {% else %}
+                            <div> You have not subscribed to any app yet. </div>
+                            {% endif %}  
                         </div>
                     </div>
                 </div>
@@ -38,10 +67,9 @@
                         </div>
                         <div class="card-body">
                             <ul>
-                                <li> <a href="{% url 'project:index' %}?tab=nav-projects-tab&tabContent=nav-projects" class="btn">My projects</a></li>
+                                <li> <a href="{% url 'project:index' %}?tab=nav-projects-tab&tabContent=nav-projects" class="btn">My Projects</a></li>
                                 <li><a href="{% url 'project:index' %}?tab=nav-tenements-tab&tabContent=nav-tenements" class="btn">My Tenements</a></li>
                           
-                                <li><a href="{% url 'project:index' %}?tab=nav-reports-tab&tabContent=nav-reports" class="btn">My Reports</a></li>
                             </ul>
                           
                             {% comment %} <a href="{% url 'project:index' %}?tab=nav-tenements-tab" class="stretched-link"></a> {% endcomment %}
@@ -121,15 +149,29 @@
                 </div>
             </div>
         </div>
-
+        <div class="modal fade" id="subPauseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content py-2 bg-ofx-green px-1 text-white">
+                    This subscription is Paused.
+                </div>
+            </div>
+        </div>
+     
 
     </div>
-    
+    <script>
+        $(document).ready(function() {
+            // When the card is clicked, open the modal
+            $('.pause-sub').click(function() {
+                $('#subPauseModal').modal('show');
+            });
+        });
+        </script>   
 <script>
     setTimeout(function () {
         if( document.getElementById("flash-message") !== null)
         document.getElementById("flash-message").style.display = "none";
-      }, 3000);   // Change "3000" to the number of milliseconds to display the flash message
+      }, 3000);   
 </script>
 
 

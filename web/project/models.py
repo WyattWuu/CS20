@@ -19,6 +19,7 @@ from django.core.cache import cache, caches
 
 from media_file.models import MediaFile
 from project.managers import ProjectManager
+from project.model_choices import CountryChoices, StateChoices
 
 User = get_user_model()
 
@@ -62,8 +63,10 @@ class Project(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
     slug = models.SlugField(max_length=200, unique=True)  # This will auto generated upon object saving
-    state = models.CharField(max_length=3, choices=AustraliaStateChoices.choices, default=AustraliaStateChoices.QLD)
-    objective = models.CharField(max_length=250)
+
+    country = models.CharField(choices=CountryChoices.choices, max_length=30)
+    state = models.CharField(choices=StateChoices.choices(), max_length=30)
+    purpose = models.CharField(max_length=250)
     locality = models.CharField(max_length=250)
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)

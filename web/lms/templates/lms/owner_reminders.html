@@ -3,12 +3,64 @@ owner.html
 id=REMINDERS_CONTENT
 {% endcomment %} -->
 {% load project_tags %}
+{% block extra_head %}
+<style>
+  .reminder-item {
+    height: auto;
+    max-height: 120px;
+
+    padding: 4px;
+    margin-bottom: 10px;
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    border: 1px solid gainsboro;
+    border-radius: 4px;
+
+    cursor:pointer;
+  }
+
+  .reminder-item:hover {
+    background-color: gainsboro;
+  }
+
+  .reminders-dropdown {
+    min-width: auto;
+    max-width: 300px;
+    max-height: 150px;
+
+    margin: 5px;
+
+
+
+    display: flex;
+    flex-direction: column;
+
+    overflow-y: scroll;
+  }
+
+  .reminders-dropdown a {
+    color: black;
+    border-radius: 2px;
+    padding: 2px;
+
+    margin-bottom: 10px;
+    border-bottom: 0.2px solid gray;
+  }
+
+  .reminders-dropdown a:hover {
+    background-color: gainsboro;
+  }
+</style>
+{% endblock %}
 
 {% if view.queryset %}
 <div class=" w-100">
   <div class="reminder-search-div p-0 search-div me-2 w-100 mb-4">
     <input type="date" class="form-control search-box" id="reminder-search" placeholder="Search Reminders..."
-    onchange="filterObjects('reminder-search','reminder-item','span', 0, true)" />                   
+            oninput="filterObjects('reminder-search','reminder-item','span', 0, true)" />                   
   </div>
 </div>
 {% for reminder in view.queryset %}
@@ -16,6 +68,12 @@ id=REMINDERS_CONTENT
       {% if view.project|is_write:view.member %}
         data-bs-toggle="modal" data-bs-target="#modifyReminderModal" data-action="modify"
         data-url="{% url 'lms:modify_reminder' slug=view.project.slug owner=reminder.owner.id reminder=reminder.id %}"
+        data-modal-content-bottom="
+          <div class='d-flex flex-column'>
+            <span class='fst-italic text-secondary'><b>Last Updated:</b> {{ reminder.date_updated|date }} {{ reminder.date_updated|time}} by {{ reminder.user_updated }}</span>
+            <span class='fst-italic text-secondary'><b>Date Created:</b> {{ reminder.date_created|date }} by {{ reminder.user_created }}</span>
+          </div>  
+        "
       {% endif %}
   >
     <div class="d-flex flex-column flex-grow-1">

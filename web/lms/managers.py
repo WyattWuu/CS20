@@ -32,7 +32,7 @@ class ParcelProjectManager(models.Manager):
         Annotations Included:
             - owners_count: Numbers of owners in the project parcels
         """
-        return self.filter(project=project, active=True).select_related('parcel').annotate(owners_count=Count('owners'))
+        return self.select_related('parcel').filter(project=project, active=True).annotate(owners_count=Count('owners'))
 
     def bulk_create_for_project(self, project, **extra_query_args):
         """Creates ProjectParcel' for each Parcel overlapping a project' area if not already exists.
@@ -40,26 +40,31 @@ class ParcelProjectManager(models.Manager):
 
         Parameters
         ----------
-            project : Project
-                Project to create parcels for
-            **query_dict
-                Dictionary used to query for parcels.
+        project : tms.Project
+            The project to create parcels for
+        **extra_query_args
+            Dictionary used to query for parcels.
         """
-        # Filter for all projects in the area and remove parcels that already have a project through created
-        from lms.models import Parcel
-        new_parcels = Parcel.objects.filter_project_area(project)
+        from lms.models import Parcel  # Need to fix circular import for this
 
-        # Create the new LandParcelProjects (cant use bulk create as it bypasses save method which wont call signals)
-        self.filter(project=project, parcel__in=new_parcels, active=False).update(active=True)
-        for new_parcel in new_parcels.all():
-            if(self.filter(project=project, parcel=new_parcel).exists()):
-                continue
-            new_parcel_project = self.model(project=project, parcel=new_parcel, user_updated=project.owner)
-            new_parcel_project.save()
+        # Get the parcels in the project area
+        project_parcels = Parcel.objects.filter_project_area(project)
+
+        # Get the existing parcel id's for the project
+        existing_parcel_id = self.filter(project=project, parcel__in=project_parcels).values_list('parcel_id', flat=True)
+
+        # Filter out any existing parcels
+        project_parcels = project_parcels.exclude(id__in=existing_parcel_id)
+
+        # Check if there's not a ProjectParcel made yet for each parcel
+        new_project_parcels = []
+        for parcel in project_parcels:
+            project_parcel = self.model(project=project, parcel=parcel, user_updated=project.owner).update(active=True)
+            new_project_parcels.append(project_parcel)
 
         # Bulk create any new project parcels required, faster than doing it in the loop
-        # if new_parcel_projects:
-        #     self.bulk_create(new_parcel_projects)
+        if new_project_parcels:
+            self.bulk_create(new_project_parcels)
 
     def delete_project_parcels_on_tenement(self, removed_tenement: Tenement):
         """

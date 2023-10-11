@@ -18,13 +18,21 @@ const emailInput = document.querySelector("#id_email");
     ".password2-cross-marker"
   );
   window.onload = function() {
- 
+    
     emailInput.value=""
     emailInput.blur()
     password1Input.value=""
     password1Input.focus()
     password1Input.blur()
-   // $("#register-form").reset()
+    error.textContent=""
+    if($("input[name='account_type']:checked").val() == "user"){
+      $("#terms_conditions").css("display","none")
+    }
+    else{
+      $("#terms_conditions").css("display","")
+    }
+  
+    // $("#register-form").reset()
    
     $(".fa-times").hide()
     $(".fa-check").hide()
@@ -111,36 +119,35 @@ const emailInput = document.querySelector("#id_email");
       password2CrossMarker.classList.replace("fa-check", "fa-times");
     }
     if (password.length < 8 || password.length > 24) {
-      error.innerHTML = "Password must be between 8 to 24 characters long.";
-      password1Input.setCustomValidity(
-        "Password must be between 8 to 24 characters long."
-      );
+      $("#pass_length").fadeIn("fast")
       isValid = false;
     }
+    else {
+      $("#pass_length").fadeOut("fast")
+    }
+
     if (!/[A-Z]/.test(password)) {
-    
-      error.innerHTML +=
-        "<br> Password must contain at least one uppercase letter.";
-      password1Input.setCustomValidity(
-        "Password must contain at least one uppercase letter."
-      );
+      $("#pass_upper").fadeIn("fast")
       isValid = false;
+    }
+    else {
+      $("#pass_upper").fadeOut("fast")
     }
 
     if (!/\d/.test(password)) {
-      error.innerHTML += "<br> Password must contain at least one digit.";
-      password1Input.setCustomValidity(
-        "Password must contain at least one digit."
-      );
+      $("#pass_number").fadeIn("fast")
       isValid = false;
     }
+    else {
+      $("#pass_number").fadeOut("fast")
+    }
+
     if (!/\W/.test(password)) {
-       error.innerHTML +=
-        "<br> Password must contain at least one special character.";
-      password1Input.setCustomValidity(
-        "Password must contain at least one special character."
-      );
+      $("#pass_special").fadeIn("fast")
       isValid = false;
+    }
+    else {
+      $("#pass_special").fadeOut("fast")
     }
 
     if (isValid) {
@@ -191,6 +198,81 @@ const emailInput = document.querySelector("#id_email");
     checkInputs();
   }
   setTimeout(function () {
-    if( document.getElementById("flash-message") !== null)
+    if( document.getElementById("flash-message")){
+    document.getElementById("flash-message").innerHTML="";
     document.getElementById("flash-message").style.display = "none";
-  }, 3000);
+    }
+  }, 5000);
+
+  document.getElementById("register-btn").addEventListener("click", function(event) {
+    // Access properties of the event object
+ 
+   let selectedAccountType = document.querySelector('input[name="account_type"]:checked').value
+   const register_form = document.getElementById("register-form");
+   if(selectedAccountType === "developer")
+   {  
+    event.preventDefault();
+    let isTermsAccepted = $("#acceptTerms").prop("checked")
+    if(isTermsAccepted){
+      register_form.submit()
+
+    }
+    else
+    {
+      document.getElementById("flash-message").style.display=""
+     document.getElementById("flash-message").innerHTML = ' <span class="alert alert-danger text-center px-2 py-2">  You have to accept terms of Orefox </span>';
+     setTimeout(function () {
+      document.getElementById("flash-message").innerHTML="";
+      document.getElementById("flash-message").style.display = "none";
+    }, 5000);
+    }
+     
+  }
+   else{
+  
+    register_form.submit()
+   }
+    // You can perform other actions based on the event object's properties
+
+});
+const userAccountType = document.getElementById("id_account_type_0")
+const developerAccountType = document.getElementById("id_account_type_1")
+//userAccountType.addEventListener('click', handleAccountTypeClick)
+//developerAccountType.addEventListener('click', handleAccountTypeClick)
+//developerAccountType.addEventListener('click', function(e){e.preventDefault();alert("Coming Soon");userAccountType.checked=true})
+function handleAccountTypeClick (event){
+ 
+  let terms = document.getElementById("terms_conditions")
+  if(event.target.value == "user"){
+ 
+   terms.style.display ="none"
+  }
+  else
+  terms.style.display ="block"
+}
+$(document).ready(function () {
+  $("#acceptTermsBtn").click(function () {
+      $("#acceptTerms").prop("checked", true);
+    
+  });
+  $("#cancelTermsBtn").click(function () {
+     $("#acceptTerms").prop("checked", false);
+   
+});
+  $("#termsModal").on("hidden.bs.modal", function () {
+    
+  });
+});
+
+
+$(document).ready(function () {
+  
+  $("#id_password1").on('focus', ()=>{
+    $("#password_requirements").fadeIn("fast")
+  })
+
+  $("#id_password1").on('blur', ()=>{
+    $("#password_requirements").fadeOut("fast")
+  })
+
+})

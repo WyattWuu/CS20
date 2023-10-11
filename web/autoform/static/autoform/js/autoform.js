@@ -241,7 +241,6 @@ $(document).ready(function () {
             },
         }).toPdf().get('pdf').then(function (pdf) {
             let numPages = pdf.internal.getNumberOfPages();
-            console.log(pdf.internal.pageSize.getHeight())
             for (var i = 1; i <= numPages; i++) {
                 pdf.setPage(i);
                 pdf.setFontSize(8);

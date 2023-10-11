@@ -73,7 +73,6 @@ $(document).ready(function () {
     });
 
     $(".morelink").on('click', function () {
-      console.log("click")
       if ($(this).hasClass("less")) {
         $(this).removeClass("less");
         $(this).html(moretext);
@@ -258,7 +257,6 @@ $(document).ready(function () {
             
           $("#file_uploader_modal").modal("hide");
         }
-        console.log("enter1")
        
         $.ajax({
           url: "http://127.0.0.1:8000/gis/map",
@@ -270,7 +268,6 @@ $(document).ready(function () {
           dataType: "json",
           cache: false,
           success: function (data) {
-            console.log("enter")
             markerList = []
             L.control.scale().addTo(map);
             var myRenderer = L.canvas({ padding: 0.5 });
@@ -356,7 +353,6 @@ $(document).ready(function () {
         });
       },
       error: function (data) {
-        console.log("data2",data2)
          $('#flash-message').addClass("alert alert-danger")
        $('#flash-message').text("Error in loading the data")
      

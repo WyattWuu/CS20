@@ -22,13 +22,13 @@
 
 
 {% block content %}
-<div id="flash-message" class="text-sm ms-5">
+<div id="flash-message" class="text-md ms-5">
     {% if messages %}
     {% for message in messages %} 
     {% if message.level == 40 %}
-    <span
-    class="alert alert-danger text-center p-2"> {{ message }}
-    </span>
+    <div
+    class="alert alert-danger p-3"> {{ message }}
+    </div>
     {% endif %} {% endfor %} {% endif %}
 </div>
 <div class="container-fluid content-margin-top-offest w-100 h-100 mb-5" >

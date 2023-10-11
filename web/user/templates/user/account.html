@@ -6,18 +6,18 @@
 
 {% endblock %}
 {% block content %}
-<div id="flash-message" class="text-sm ms-4">
+<div id="flash-message" class="text-md ms-4">
   {% if messages %}
   {% for message in messages %} 
   {% if message.level == 40 %}
-  <span
-  class="alert alert-danger text-center px-2 py-1"> {{ message }}
-  </span>
+  <div
+  class="alert alert-danger p-3"> {{ message }}
+  </div>
   {% endif %}
   {% if message.level == 25 %}
-  <span
-  class="alert alert-success text-center px-2 py-1"> {{ message }}
-  </span>
+  <div
+  class="alert alert-success p-3"> {{ message }}
+  </div>
   {% endif %}
   {% endfor %} {% endif %}
 </div>

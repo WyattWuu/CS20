@@ -65,19 +65,17 @@
 
   <script>
     $(document).ready(function () {
-      var tenements = "{{tenement_permit}}"; // get json string containing tenement names from url
-      tenements = tenements.replaceAll("&quot;", '"'); // modify it for javascript
+      var tenement = "{{tenement}}"; // get json string containing tenement names from url
+      tenement = tenement.replaceAll("&quot;", '"'); // modify it for javascript
 
       var targets = "{{targets}}";
       targets = targets.replaceAll("&quot;", '"'); // modify it for javascript
 
-      $.getJSON('get/tenements_json/', function (data) {
-        var tenement_map = generate_tenement_map(JSON.parse(tenements), JSON.parse(targets), L.geoJson(data)); // get the tenement map
+      var tenement_map = generate_tenement_map(JSON.parse(tenement), JSON.parse(targets)); // get the tenement map
         
-        $('#sidebarToggleButton').on('click',function (e) {     
-          setTimeout(function(){tenement_map.invalidateSize()}, 200);
-        });
-      })
-    });
+      $('#sidebarToggleButton').on('click',function (e) {     
+        setTimeout(function(){tenement_map.invalidateSize()}, 200);
+      });
+    })
   </script>
 </html>

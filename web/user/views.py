@@ -1,4 +1,3 @@
-
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -15,14 +14,12 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.db.models.query_utils import Q
 from bs4 import BeautifulSoup
-from .forms import  SetPasswordForm, PasswordResetForm
+from .forms import SetPasswordForm, PasswordResetForm
 from .decorators import user_not_authenticated
 from .tokens import account_activation_token
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 from user.models import User
-
-
 
 
 # These aren't needed yet as we're using appboard and redirects
@@ -46,30 +43,32 @@ def register_view(request):
         if register_form.is_valid():
             # Save contents from form into user
             user = register_form.save()
-         
+
             # Clean password from form
             password = register_form.cleaned_data.get('password1')
-            print("user", user,password)
+            print("user", user, password)
             # Authenticate and login
             user = authenticate(email=user.email, password=password)
-            
+
             dj_login(request, user)
-            messages.success(request, 'You have successfully register!')     
+            messages.success(request, 'You have successfully registered!')
             return redirect('appboard:home')
         else:
-            err=""
-            for field,errors in register_form.errors.items():
+            err = ""
+            for field, errors in register_form.errors.items():
                 for error in errors:
-                    err +=  error + '<br><br>'
-                  
-            err = err[:-9]      
-              
-            messages.error(request, format_html(err ))     
-    
-           
+                    err += error + '<br><br>'
+
+            err = err[:-9]
+
+            messages.error(request, format_html(err))
+
+
     else:
         register_form = forms.RegistrationForm()
     return render(request, "user/register.html", {'form': register_form})
+
+
 def login_view(request):
     if request.method == 'POST':
         email = request.POST['email']
@@ -82,16 +81,21 @@ def login_view(request):
         else:
             messages.error(request, 'Invalid Email or Password.')
     return render(request, 'user/login.html')
+
+
 def check_username(request):
-  if request.method == 'POST':
-    username = request.POST['username']
-    user_exists = User.objects.filter(username=username).exists()
-    return JsonResponse({'exists': user_exists})
+    if request.method == 'POST':
+        username = request.POST['username']
+        user_exists = User.objects.filter(username=username).exists()
+        return JsonResponse({'exists': user_exists})
+
+
 def check_email(user_email):
- # if request.method == 'POST':
-  #  username = request.POST['email']
+    # if request.method == 'POST':
+    #  username = request.POST['email']
     email_exists = User.objects.filter(email=user_email).exists()
     return email_exists
+
 
 # These were used when allauth was still active, not sure what they're for but some of the templates link to them so whatever
 @login_required
@@ -102,6 +106,7 @@ def inactive_view(request):
 @login_required
 def email_view(request):
     return render(request, "user/account.html", {})
+
 
 def password_reset_request(request):
     if request.method == 'POST':
@@ -118,30 +123,29 @@ def password_reset_request(request):
                     'token': account_activation_token.make_token(associated_user),
                     "protocol": 'https' if request.is_secure() else 'http'
                 })
-                print("email message",message)
+                print("email message", message)
                 email = EmailMessage(subject, message, to=[associated_user.email])
                 if email.send():
-                    messages.success(request,mark_safe("Password Reset Email sent")
-                    )
+                    messages.success(request, mark_safe("Password Reset Email Sent")
+                                     )
                 else:
                     messages.error(request, "Email not sent, try again")
                     return render(request, 'user/password_reset.html')
             else:
-           # Email does not exist, handle the error or show a message
+                # Email does not exist, handle the error or show a message
                 messages.error(request, "No user with this email exist")
-       
-                return render(request, 'user/password_reset.html')
-     
-            return redirect('user:login')
 
-       
+                return render(request, 'user/password_reset.html')
+
+            return redirect('user:login')
 
     form = PasswordResetForm()
     return render(
-        request=request, 
-        template_name="user/password_reset.html", 
+        request=request,
+        template_name="user/password_reset.html",
         context={"form": form}
-        )
+    )
+
 
 def passwordResetConfirm(request, uidb64, token):
     User = get_user_model()
@@ -162,14 +166,16 @@ def passwordResetConfirm(request, uidb64, token):
                 for error in list(form.errors.values()):
                     errorText = BeautifulSoup(str(error), 'html.parser')
                     messages.error(request, errorText.get_text())
-                    print("error",errorText.get_text())
-                  
+                    print("error", errorText.get_text())
+
         form = SetPasswordForm(user)
         return render(request, 'user/password_reset_confirm.html', {'form': form})
     else:
         messages.error(request, "Link is expired")
 
     return redirect('user:login')
+
+
 @login_required
 def manage_account_view(request):
     if request.method == 'POST':
@@ -177,36 +183,33 @@ def manage_account_view(request):
         if request.POST.get('first_name') and request.POST.get('last_name'):
             user_first_name = request.POST['first_name']
             user_last_name = request.POST['last_name']
-            request.user.first_name = user_first_name         
+            request.user.first_name = user_first_name
             request.user.last_name = user_last_name
             request.user.save()
-            messages.success(request, "Name Changed Successfully") 
-           
-                
+            messages.success(request, "Name Changed Successfully")
+
         if request.POST.get('email'):
             user_email = request.POST['email']
-            if(check_email(user_email)):
-                messages.error(request, "Email Already taken ") 
-               
-            else:    
+            if (check_email(user_email)):
+                messages.error(request, "Email Already Taken ")
+
+            else:
                 request.user.email = user_email
                 request.user.save()
-                messages.success(request, "Email Changed Successfully") 
+                messages.success(request, "Email Changed Successfully")
         if request.POST.get('company'):
             request.user.company = request.POST['company']
             request.user.save()
-            messages.success(request, "Company Changed Successfully") 
+            messages.success(request, "Company Changed Successfully")
         if request.POST.get('old_password') and request.POST.get('new_password1'):
-            if(request.POST.get('new_password2') == request.POST.get('new_password1')):
+            if (request.POST.get('new_password2') == request.POST.get('new_password1')):
                 if request.user.check_password(request.POST['old_password']):
                     request.user.set_password(request.POST['new_password1'])
                     request.user.save()
-                    messages.success(request, "Password Changed Successfully") 
+                    messages.success(request, "Password Changed Successfully")
                 else:
                     messages.error(request, "Old password is wrong")
             else:
-                    messages.error(request, "Passwords not match")   
-                    
+                messages.error(request, "Passwords do not match")
 
-
-    return render(request,"user/account.html",{})
+    return render(request, "user/account.html", {})

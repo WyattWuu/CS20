@@ -29,7 +29,7 @@
 
             <input type="checkbox" data-category="relationship" data-url="{% url "lms:relationships" slug=view.project.slug parcel=parcel.id %}">
             <label for="relationship">
-                <b>Parcel Owners</b>
+                <b>Parcel Owners {{parcel.lot_plan}}</b>
                 <button data-bs-toggle="modal" data-bs-target="#newRelationshipModal"
                         data-url="{% url 'lms:relationships' slug=view.project.slug parcel=parcel.id %}">Add Existing +
                 </button>

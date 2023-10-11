@@ -1,6 +1,6 @@
 from django.urls import path
 
-from interactive_map import views as im_views
+from interactive_map.views import main as im_main
 from . import views
 from .utils import post
 
@@ -10,7 +10,16 @@ PROJECT_BASE = 'p/<str:slug>/'
 
 urlpatterns = [
     path('', views.project_index, name='index'),
+    # path('new_project/', views.render_region_form, name='render-region-form'),
     path('new_project/', views.new_project, name='new_project'),
+    path('get_states/', views.get_states, name='get_states'),
+
+    path('my_projects/', views.my_projects, name='my_projects'),
+    path('my_tenements/', views.my_tenements, name='my_tenements'),
+    path('project_kms/', views.project_kms_view, name='project_kms'),
+    path('project_lms/', views.project_lms_view, name='project_lms'),
+
+    # path('create_project/', views.new_project, name='new_project'),
     # GET Requests
     # Project Index
     path('get/projects/', views.get_projects, name='get_projects'),
@@ -32,8 +41,9 @@ urlpatterns = [
     path(PROJECT_BASE + 'get/file/<str:uuid>', views.project_file_download, name='get_file'),
 
     # Project Map Views
-    path(PROJECT_BASE + 'get/project_map/', im_views.get_project_map, name='get_project_map'),
-    path(PROJECT_BASE + 'get/tenements_json/', im_views.get_multi_tenements_json, name='get_tenements_json'),
+    path(PROJECT_BASE + 'get/project_map/', views.get_project_map, name='get_project_map'),
+    # path(PROJECT_BASE + 'get/tenements_json/', im_views.get_multi_tenements_json, name='get_tenements_json'),
+    # path(PROJECT_BASE + 'get/tenements_geojson/', im_views.get_tenements_geojson, name='get_tenements_geojson'),
     
     # POST Requests
     path(PROJECT_BASE + 'post/delete/', post.delete_project, name='delete_project'),

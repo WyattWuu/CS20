@@ -12,6 +12,7 @@ urlpatterns = [
     path('update/board', views.update_board, name="update_board"),
     path('delete/board', views.delete_board, name="delete_board"),
     path('column', views.create_column, name="column"),
+    path('column_update', views.update_column, name="update_column"),
     path('column_deletion', views.delete_column, name="delete_column"),
     path('task', views.create_task, name="task"),
     path('update/task', views.update_task, name="update_task"),

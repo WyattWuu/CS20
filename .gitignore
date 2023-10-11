@@ -62,6 +62,8 @@ db.sqlite3
 db.sqlite3-journal
 web/static_root/
 web/media_root/
+web/*/migrations/*.py
+!web/*/migrations/__init__.py
 
 # Flask stuff:
 instance/
@@ -143,8 +145,6 @@ static_root
 media_root
 
 web/search_engine/demoapp/QGNJ_TEXT.csv
-web/users/migrations/0002_user_username.py
-web/forum/migrations/0002_auto_20211201_0419.py
 
 .idea
 /web/search_engine/demoapp/tok_text.pkl
@@ -170,4 +170,3 @@ web/gis/static/gis/img/
 
 # MAC_OS
 .DS_Store
-

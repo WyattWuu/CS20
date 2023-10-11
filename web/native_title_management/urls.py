@@ -10,7 +10,7 @@ PROJECT_BASE = '<str:slug>/'
 
 
 urlpatterns = [
-    path(PROJECT_BASE, views.nms_project, name='nms'),
+    # path(PROJECT_BASE, views.nms_project, name='nms'),
 ]
 
 if settings.DEBUG:

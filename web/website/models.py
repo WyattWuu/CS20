@@ -1,5 +1,15 @@
+import uuid
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 
+
+User = get_user_model()
 
 
 class ContactMessage(models.Model):

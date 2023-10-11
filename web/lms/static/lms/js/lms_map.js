@@ -1,54 +1,61 @@
-lot_map = L.map('lot_map', {
+parcels_map = L.map('parcels_map', {
   zoonControl: false,
   // dragging: false
-});
+}).setView([-20.917574, 142.702789], 6);
 VIEW_ZOOM = 13
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-}).addTo(lot_map);
+}).addTo(parcels_map);
 
 
 owners_count_color = {
-  zero: "#c3c3c3",
-  one: "#a6b6cd",
-  two: "#5f759d",
-  five: "#20315e"
+  zero: "#9CA3BA",
+  one: "#3D5888",
+  two: "#323B6A",
+  five: "#0a1936"
 }
 
 styles = {
   project:
   {
     weight: 2,
-    fillOpacity: 0.2,
-    color: "#666666"
+    fillOpacity: 0.05,
+    color: '#8f8d8d',
+    zIndex: 0
   },
   normal: {
     weight: 2,
-    fillOpacity: 0.5
+    fillOpacity: 0.2,
   },
   selected: {
-    weight: 2,
-    fillOpacity: 0.3,
-    color: "red"
+    weight: 5,
+    fillOpacity: 0.8,
+    color: "#E78830" 
   },
   hover: {
-    weight: 8,
-    fillOpacity: 0.7
+    weight: 5,
+    fillOpacity: 1,
+    color: "#E78830"
   }
 }
 
 // Init parcels on page first loading
 featureCollectionData = JSON.parse(PARCEL_FEATURE_COLLECTION_CONTEXT.replaceAll("&quot;", '"'))
-parcelsLayer = L.geoJSON(featureCollectionData, {
+parcelsLayer = L.geoJSON(null, {
   style: function(feature) {
     return styles.normal
   },
   onEachFeature: onEachParcelFeature
-}).addTo(lot_map)
+}).addTo(parcels_map)
+
+if (Object.keys(featureCollectionData).length > 0){
+  parcelsLayer.addData(featureCollectionData);
+}
+
 
 //let selectedFeature;
-function updateParcelMapOnSelectingParcel(parcelMapURL) {
+function updateParcelMapOnSelectingParcel(parcelMapURL, completion) {
  
   console.log(parcelMapURL);
   $.getJSON(parcelMapURL,
@@ -59,9 +66,9 @@ function updateParcelMapOnSelectingParcel(parcelMapURL) {
       featureCollectionData = responseData.data.parcels_feature_collection
 
       const parcelMiddlePoint = selectedFeature.properties.middle_point.coordinates.slice().reverse() 
-      lot_map.setView(parcelMiddlePoint, VIEW_ZOOM ?? 12)
+      parcels_map.setView(parcelMiddlePoint, VIEW_ZOOM ?? 12)
       // const layer = parcelsLayer.getLayer(selectedFeature.properties.id)
-      // lot_map.panTo(layer.getBounds().getCenter())
+      // parcels_map.panTo(layer.getBounds().getCenter())
 
       // Set project Geometry
       projectL = L.geoJSON(featureCollectionData.project_geometry, {
@@ -69,7 +76,7 @@ function updateParcelMapOnSelectingParcel(parcelMapURL) {
           return styles.project
         },
         
-      }).addTo(lot_map)
+      }).addTo(parcels_map)
       
       // Set Parcels Geometry with updated data
       parcelsLayer.clearLayers()
@@ -78,7 +85,7 @@ function updateParcelMapOnSelectingParcel(parcelMapURL) {
           return styles.normal
         },
         onEachFeature: onEachParcelFeature
-      }).addTo(lot_map)
+      }).addTo(parcels_map)
 
       parcelsLayer.bringToFront();
 
@@ -92,6 +99,8 @@ function updateParcelMapOnSelectingParcel(parcelMapURL) {
           layer.feature.properties["selected"] = false
         }
       });
+
+      completion()
     }
   );
 }
@@ -118,7 +127,7 @@ function onEachParcelFeature(feature, layer) {
     },
     // Zoom to Tenement when it is clicked
     click: function (e) {
-        // lot_map.fitBounds(e.target.getBounds());
+        // parcels_map.fitBounds(e.target.getBounds());
        
         
         // parcelsLayer.eachLayer((l) => {
@@ -128,9 +137,9 @@ function onEachParcelFeature(feature, layer) {
 
         // layer.setStyle(styles.selected)
         // layer.feature.properties["selected"] = true
-        // lot_map.panTo(layer.getBounds().getCenter())
+        // parcels_map.panTo(layer.getBounds().getCenter())
 
-        handleParcelChanged(null, feature.properties.url)
+        handleParcelChanged(feature.properties.id, feature.properties.url)
     },
   });
 
@@ -171,22 +180,23 @@ legend.onAdd = function(map) {
   return div;
 };
 
-legend.addTo(lot_map);
+legend.addTo(parcels_map);
 
 // ----- Style
 function setLayerToNormal(layer) {
-  const owners_count = layer.feature.properties.owners_count
+  let owners_count = layer.feature.properties.owners_count
   if (!owners_count) {
     layer.setStyle(styles.normal)
   }
+  // owners_count = Math.floor(Math.random() * 10);
   if (owners_count === 0) {
-    layer.setStyle({...styles.normal, color: owners_count_color.zero})
+    layer.setStyle({...styles.normal, fillOpacity: 0.5, color: owners_count_color.zero, fillColor: owners_count_color.zero, weight: 3})
   } else if (owners_count === 1) {
-    layer.setStyle({...styles.normal, color: owners_count_color.one})
+    layer.setStyle({...styles.normal, fillOpacity: 0.5, weight: 2, color: owners_count_color.one, fillColor: owners_count_color.one})
   } else if (owners_count >= 2 && owners_count <=5 ) {
-    layer.setStyle({...styles.normal, color: owners_count_color.two})
+    layer.setStyle({...styles.normal, weight: 2, fillOpacity: 0.7, color: owners_count_color.two, fillColor: owners_count_color.two})
   } else {
-    layer.setStyle({...styles.normal, color: owners_count_color.five})
+    layer.setStyle({...styles.normal, weight: 3, fillOpacity: 0.8, color: owners_count_color.five, fillColor: owners_count_color.five})
   }
 
   if (layer.feature.properties.selected) {

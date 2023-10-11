@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
+from django.contrib.gis.db.models import Union
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import models
 from django.db.models import Prefetch
@@ -76,6 +77,11 @@ class TaskManager(models.Manager):
 
 
 class TenementManager(models.Manager):
+
+    def geometry_union(self, queryset):
+        return queryset.aggregate(
+            Union('area_polygons')
+        ).get('area_polygons__union')
 
     def filter_permission(self, request: WSGIRequest, permission: int, **kwargs):
         return self.filter(**kwargs).select_related('project').prefetch_related(

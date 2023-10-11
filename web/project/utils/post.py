@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.shortcuts import reverse
 from django.utils.formats import localize
 from django.views.decorators.http import require_POST
+from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Q
 
 from media_file.forms import CreateMultipleMediaFileForm
 from media_file.models import MediaFile
@@ -17,7 +19,7 @@ from project.utils.decorators import has_project_permission
 from tms.forms import AddTenementForm
 from tms.models import Target, TenementTask
 from django.contrib import messages
-from interactive_map import views as im_views
+import interactive_map.views.main as im_views
 import numpy as np
 
 User = get_user_model()
@@ -51,7 +53,8 @@ def delete_project(request, project, slug):
         tenement.project = None
         tenement.save()
     project.delete()
-
+    project.save()
+    
     # Notify members of the project
     notify_project_members(
         project=project,
@@ -204,31 +207,34 @@ def leave_project(request, project, slug):
 def add_target(request, project, slug):
     post_data = request.POST.copy()
     post_data['project'] = project.id
-    #post_data['created_user'] = request.user
+    lon, lat = map(float, post_data.get('location').split())
+    target_area = GEOSGeometry(f"POINT({lat} {lon})")
+    post_data['area'] = target_area 
 
-    #target_form = CreateTargetForm(data=post_data or None)
     target_form = CreateTargetForm(user=request.user, data=post_data or None)
     if target_form.is_valid():
         target = target_form.save()
-        tenements = project.tenements.all()
-
-        project_tenements = [{
-                'type': tenement.permit_type,
-                'number': tenement.permit_number,
-                'slug': tenement.get_absolute_url(),
-        } for tenement in tenements]
+        
+        overlapping_tenements = project.tenements.filter(
+            Q(area_polygons__intersects = target_area )
+            )
+        if overlapping_tenements.exists():
+            target_permits = [{
+                    'type': tenement.permit_type,
+                    'number': tenement.permit_number,
+                    'slug': tenement.get_absolute_url(),
+            } for tenement in overlapping_tenements]
+        else:
+            target_permits = []
 
         context = {
             'data': {
-                # TODO: Figure out how the permit column should be populated
-                'permit': {'slug': None, 'type': None, 'number': None},
+                'permit': target_permits,
                 'name': target.name,
                 'description': target.description,
                 'location': target.location,
                 'actions': None,
             },
-        'tenement_data': im_views.get_tenements_data(),
-        'project_tenements': project_tenements,
         }
         messages.success(request, 'Target Created Successfully')
         # return JsonResponse(context, status=HTTPStatus.OK)
@@ -241,6 +247,7 @@ def add_target(request, project, slug):
             url=reverse('project:dashboard', kwargs={'slug': project.slug})
         )
     else:
+        print('error happened')
         err = ""
         for field, errors in target_form.errors.items():
             for error in errors:
@@ -258,29 +265,32 @@ def edit_target(request, project, slug, target_name):
     target.name = post_data.get('name')
     target.location = post_data.get('location')
     target.description = post_data.get('description')
+    lon, lat = map(float, target.location.split())
+    target.area = GEOSGeometry(f"POINT({lat} {lon})")
     
     target.save()
     print('target save')
     messages.success(request, 'Target Updated Successfully')
-    tenements = project.tenements.all()
-
-    project_tenements = [{
-            'type': tenement.permit_type,
-            'number': tenement.permit_number,
-            'slug': tenement.get_absolute_url(),
-    } for tenement in tenements]
+    
+    overlapping_tenements = project.tenements.filter(
+            area_polygons__intersects=target.area
+        )
+        
+    target_permits = [{
+                'type': tenement.permit_type,
+                'number': tenement.permit_number,
+                'slug': tenement.get_absolute_url(),
+        } for tenement in overlapping_tenements]
+        
     # Return the updated target data as JSON
     context = {
             'data': {
-                # TODO: Figure out how the permit column should be populated
-                'permit': {'slug': None, 'type': None, 'number': None},
+                'permit': target_permits,
                 'name': target.name,
                 'description': target.description,
                 'location': target.location,
                 'actions': None,
             },
-        'tenement_data': im_views.get_tenements_data(),
-        'project_tenements': project_tenements,
         }
     return JsonResponse(context, status=HTTPStatus.OK)
 

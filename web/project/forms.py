@@ -10,12 +10,36 @@ from django.db.models.functions import Concat
 from django.forms import DateInput
 from django.contrib.auth import get_user_model
 
+from forms.forms import CategoryChoiceField
 from media_file.models import MediaFile
-from project.models import Project, ProjectMember, Permission, AustraliaStateChoices
+from project.models import Project, ProjectMember, Permission, AustraliaStateChoices, CountryChoices, StateChoices
 from tms.models import Tenement, Target, TenementTask
 from interactive_map.widget import TargetInputWidget
+from .model_choices import CountryChoices, StateChoices
 
 User = get_user_model()
+
+class RegionForm(forms.Form):
+    country = forms.ChoiceField(
+        choices=[('', 'Select country')] + CountryChoices.choices,
+        initial=CountryChoices.Australia,
+        widget=forms.Select(attrs={'data-category': 'country', 'id': 'countryId', 'class': 'form-control'}),
+    )
+    
+    state = forms.ChoiceField(
+        label='State',
+        choices=[('', 'Select state')],
+        initial=StateChoices.CHOICES.get(CountryChoices.Australia, []),
+        widget=forms.Select(attrs={'data-category': 'state', 'id': 'stateId', 'class': 'form-control'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(RegionForm, self).__init__(*args, **kwargs)
+        
+        if 'country' in self.data:
+            country = self.data['country']
+            state_choices = StateChoices.CHOICES.get(country, [])
+            self.fields['state'].choices = [('', 'Select state')] + state_choices
 
 
 class CreateProjectForm(forms.ModelForm):
@@ -32,23 +56,25 @@ class CreateProjectForm(forms.ModelForm):
             else:
                 field.widget.attrs['class'] = 'form-control'
 
-    def clean_state(self):
-        data = super().clean()
-        state = data.get('state')
+    # def clean_state(self):
+    #     data = super().clean()
+    #     state = data.get('state')
 
-        # TODO: Modify this to accept different states as they are implemented
-        if state != AustraliaStateChoices.QLD:
-            self.add_error('state', 'Currently only QLD is supported')
+    #     # TODO: Modify this to accept different states as they are implemented
+    #     if state != AustraliaStateChoices.QLD:
+    #         self.add_error('state', 'Currently only QLD is supported')
 
-        return state
+    #     return state
 
     class Meta:
         model = Project
-        fields = ('name', 'state', 'locality', 'objective',)
+        fields = ('name', 'country', 'state', 'locality', 'purpose',)
         widgets = {
-            "name": forms.TextInput(attrs={'placeholder': 'My New Project', 'required' : True}),
-            "locality": forms.TextInput(attrs={'placeholder': 'Where is the project located?', 'required' : 'true'}),
-            "objective": forms.Textarea(attrs={'placeholder': 'What do you hope to achieve?', 'rows' : 4, 'required' : 'true'}),
+            "name": forms.TextInput(attrs={'placeholder': 'Project Name', 'required' : True}),
+            "country": forms.TextInput(attrs={'placeholder': 'In which country is the project located?', 'required' : 'true'}),
+            "state": forms.TextInput(attrs={'placeholder': 'In which state/province is the project located?', 'required' : 'true'}),
+            "locality": forms.TextInput(attrs={'placeholder': 'Locality (city, town, area, etc.)', 'required' : 'true'}),
+            "purpose": forms.Textarea(attrs={'placeholder': 'What do you hope to achieve?', 'rows' : 4, 'required' : 'true'}),
         }
 
 
@@ -181,7 +207,7 @@ class InviteUserForm(forms.Form):
 
 class CreateTaskForm(forms.ModelForm):
     authority = forms.ChoiceField()
-    attachments = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True,'required':False}), required=False)
+    attachments = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True,'required':False}),required=False)
 
     def __init__(self, instance: Union[Tenement, Project] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,10 +236,9 @@ class CreateTaskForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field.widget.attrs.get('class'):
                 field.widget.attrs['class'] += ' form-control'
-                                           
+                            
             else:
                 field.widget.attrs['class'] = 'form-control'
-                
 
     def clean(self):
         data = self.cleaned_data

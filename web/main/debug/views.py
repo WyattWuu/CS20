@@ -45,11 +45,13 @@ def platform_debug_setup_view(request):
     """
     from django.contrib.auth import login
 
-    # Creates/Logs in a new superuser
+   # Creates/Logs in a new superuser
     su = User.objects.create_superuser('admin@email.com', 'admin', first_name='Mein',
+           
                                             last_name='Luftkissenfahrzeug')
-    login(request, su)
+    #su = User.objects.get(email='admin@email.com')
 
+    login(request, su)
     u1 = User.objects.create_user('user1@email.com', 'pass', first_name='George', last_name='Costanza')
     u2 = User.objects.create_user('user2@email.com', 'pass', first_name='Ronald', last_name='Weasley')
     u3 = User.objects.create_user('user3@email.com', 'pass', first_name='Hubert', last_name='Cumberdale')
@@ -58,15 +60,22 @@ def platform_debug_setup_view(request):
     u2.save()
     u3.save()
     u4.save()
+   
 
-    # Creates a project
+    # su = User.objects.get(email="admin@email.com") 
+    # u1 = User.objects.get(email='user1@email.com')
+    # u2 = User.objects.get(email='user2@email.com')
+    # u3 = User.objects.get(email='user3@email.com')
+    # u4 = User.objects.get(email='user4@email.com')
+    #Creates a project
     project1 = Project.objects.create(**{
         'name': 'Owner Project',
         'owner': request.user,
-        'objective': 'owner test',
+        'purpose': 'owner test',
         'locality': 'someplace neat',
         'credits': 12345
     })
+    # project1 = Project.objects.get(slug="owner-project")
     ProjectMember.objects.create(project=project1, user=su, permission=Permission.OWNER)
     ProjectMember.objects.create(project=project1, user=u1, permission=Permission.WRITE)
     ProjectMember.objects.create(project=project1, user=u2, permission=Permission.READ)
@@ -79,7 +88,7 @@ def platform_debug_setup_view(request):
     project2 = Project.objects.create(**{
         'name': 'Admin Project',
         'owner': u1,
-        'objective': 'admin test',
+        'purpose': 'admin test',
         'locality': 'someplace even cooler',
         'credits': 42
     })
@@ -93,7 +102,7 @@ def platform_debug_setup_view(request):
     project3 = Project.objects.create(**{
         'name': 'Write Project',
         'owner': u1,
-        'objective': 'write test',
+        'purpose': 'write test',
         'locality': 'someplace even cooler',
         'credits': 9001
     })
@@ -107,7 +116,7 @@ def platform_debug_setup_view(request):
     project4 = Project.objects.create(**{
         'name': 'Read Project',
         'owner': u1,
-        'objective': 'read test',
+        'purpose': 'read test',
         'locality': 'someplace even cooler',
         'credits': 1337
     })
@@ -121,7 +130,7 @@ def platform_debug_setup_view(request):
     project5 = Project.objects.create(**{
         'name': 'nonmember',
         'owner': u1,
-        'objective': 'nonmember test',
+        'purpose': 'nonmember test',
         'locality': 'someplace even cooler',
         'credits': 1234
     })

@@ -21,17 +21,17 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid mb-4 px-4 content-margin-top-offest">
-        <div class="text-ofx-blue row justify-content-center" >
-            <h4 class="text-ofx-blue mb-4">GeoChemical Analysis<i class=" ms-2 fas fa-fw fa-chart-line"></i></h4>
-        </div>
+    <div class="container-fluid mb-4 content-margin-top-offest">
+        <div class="container">
+            <h4 class="text-ofx-blue mb-2">GeoChemical Analysis<i class=" ms-2 fas fa-fw fa-chart-line"></i></h4>
+            <div id="title-divider" class="mb-4"></div>
 
-        <div class="row justify-content-center my-2">
+            <div class="row justify-content-center">
 
             <div class="col-12">
                 {# Geochem Page Navs #}
 
-                <div class="card mb-4 shadow" id="applicationNav">
+                <div class="card mb-4 my-3 shadow" id="applicationNav">
                     <div class="card-header">
                         <div class="nav nav-tabs card-header-tabs" id="nav-tab">
                             <a class="nav-item nav-link active" id="nav-upload-tab">1. Dataset Upload</a>
@@ -441,7 +441,7 @@
                                         Back
                                     </button>
 
-                                    <button type="submit" class="btn btn-sm btn-ofx-green float-right">
+                                    <button type="submit" class="btn btn-sm btn-ofx-green float-right" id="submitDataAnalysis" disabled>
                                         Submit Data Analysis
                                     </button>
                                 </div>
@@ -467,6 +467,7 @@
 
                 </div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -1049,7 +1050,6 @@
   
     <script>
         let get_existing_dataset_url = '{% url 'geochem:get_existing_datasets' %}'
-        console.log("existing data",get_existing_dataset_url)
        // console.log("process files",process_files)
         let handle_dataset_upload_url = '{% url 'geochem:handle_dataset_upload' %}'
     </script>

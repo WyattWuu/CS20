@@ -11,6 +11,7 @@ from media_file.models import MediaFile
 from project.models import AustraliaStateChoices, Permission, Project
 from tms.models import Tenement, PermitTypeChoices, WorkProgram, WorkProgramReceipt
 from django.contrib.auth import get_user_model
+from dal import autocomplete
 
 import numpy as np
 from tms.utils import scraper
@@ -22,8 +23,7 @@ class AddTenementForm(forms.Form):
     project = forms.ChoiceField()
     permit_state = forms.ChoiceField(choices=AustraliaStateChoices.choices, widget=Select(attrs={'data-category': 'permit_type'}), initial=AustraliaStateChoices.QLD)
     permit_type = CategoryChoiceField(categories=PermitTypeChoices.choices(True))
-    permit_number = forms.IntegerField()
-
+    permit_number = forms.ModelChoiceField(queryset=Tenement.objects.all(), widget=autocomplete.ModelSelect2(url="tms:tenement-autocomplete", attrs={'data-html': True}, forward=['permit_type', 'permit_state']))
     _tenement = None
 
     def __init__(self, user, *args, **kwargs):
@@ -35,6 +35,8 @@ class AddTenementForm(forms.Form):
         self._project: Project = kwargs.pop('project', None)
 
         super().__init__(*args, **kwargs)
+
+        self.fields['permit_number'].labels = "Search by permit number owner"
 
         if not self._project:
             self.fields['project'].choices = self._projects
@@ -66,26 +68,14 @@ class AddTenementForm(forms.Form):
         except IndexError:
             self.add_error('permit_type', 'Permit Type not valid for this State')
 
-        if permit_number < 0:
+        if not permit_number:
             self.add_error('permit_number', 'Must be greater than zero')
 
-        # TODO: REMOVE THIS WHEN STATE FILTER HAS BEEN IMPLEMENTED
-        if permit_state != AustraliaStateChoices.QLD:
-            self.add_error('permit_state', 'Only QLD is currently supported.')
-
-        if permit_state == AustraliaStateChoices.QLD:
-            try:
-                tenement = Tenement.objects.get(permit_state=permit_state, permit_type=permit_type, permit_number=permit_number)
-            except ObjectDoesNotExist:
-                tenement, was_created = scraper.scrape_tenement(permit_state, permit_type, permit_number)
-
-            if not tenement:
-                self.add_error('__all__', '%s %s Not Found' % (permit_type, permit_number))
-
-            elif tenement.project:
+        else:
+            if permit_number.project:
                 self.add_error('__all__', '%s %s is already claimed' % (permit_type, permit_number))
 
-            self._tenement = tenement
+            self._tenement = permit_number
 
         print(self.errors)
 

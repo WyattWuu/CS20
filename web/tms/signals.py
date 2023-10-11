@@ -40,3 +40,4 @@ def auto_add_complaince_tasks(sender, instance: Tenement, **kwargs):
     if old_project is None and instance_project:
         # TODO: Attach a media file if we have to
         TenementTask.objects.generate_complaince_documents(instance)
+

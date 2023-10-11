@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+import datetime
 from mimetypes import guess_type
 from typing import Union
 
@@ -120,6 +120,7 @@ class ParcelOwnerRelationshipForm(forms.ModelForm):
 
         # Owner must not exist in parcel already
         if self.instance:
+            print("self.parcel",self.parcel.id)
             unique_parcel_owner = ParcelOwnerRelationship.objects.filter(owner=self.owner, parcel=self.parcel).exclude(pk=self.instance.pk)
 
             if unique_parcel_owner.exists():
@@ -169,7 +170,8 @@ class CreateInfoForm(forms.ModelForm):
         self.owner = owner
 
         super().__init__(*args, **kwargs)
-
+        
+        self.fields['content'].required = False
         del self.fields['owner']
         del self.fields['user_created']
 
@@ -202,7 +204,7 @@ class CreateInfoForm(forms.ModelForm):
         exclude = ('user_updated', 'user',)
         widgets = {
             # 'files': ,
-            'content': forms.Textarea(attrs={'class': 'align-top'})
+            'content': forms.Textarea(attrs={'class': 'align-top', 'required': False})
         }
 
 
@@ -229,18 +231,18 @@ class LandOwnerCorrespondenceForm(CreateInfoForm):
 
 class LandOwnerTaskForm(CreateInfoForm):
 
+    date_due = forms.DateField(widget=DateInput(attrs={'type': 'date'}), initial=datetime.today())
+
     def __init__(self, request, project, *args, **kwargs):
         super().__init__(request, project, *args, **kwargs)
 
     class Meta(CreateInfoForm.Meta):
         model = LandParcelOwnerTask
         widgets = CreateInfoForm.Meta.widgets.copy()
-        widgets.update({
-            'date_due': DateInput(attrs={'type': 'date'})
-        })
-
 
 class LandParcelOwnerReminderForm(CreateInfoForm):
+
+    date_due = forms.DateField(widget=DateInput(attrs={'type': 'date'}), initial=datetime.today())
 
     def __init__(self, request, project, *args, **kwargs):
         super().__init__(request, project, *args, **kwargs)
@@ -248,6 +250,3 @@ class LandParcelOwnerReminderForm(CreateInfoForm):
     class Meta(CreateInfoForm.Meta):
         model = LandParcelOwnerReminder
         widgets = CreateInfoForm.Meta.widgets.copy()
-        widgets.update({
-            'date_due': DateInput(attrs={'type': 'date'})
-        })

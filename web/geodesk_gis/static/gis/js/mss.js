@@ -156,9 +156,7 @@ $(document).ready(function () {
 	map.doubleClickZoom.disable(); 
 	map.flyTo([-26, 135], 6)
 	map.on('dblclick', function(ev) {
-			console.log(parseInt($("[name = 'process_id']").val()))
         if (parseInt($("[name = 'process_id']").val())  < 2){
-        console.log(ev.latlng)
         lat_min = ev.latlng.lat - size;
         lat_max = ev.latlng.lat + size;
         long_min = ev.latlng.lng - (size / Math.cos(ev.latlng.lat*Math.PI/180));
@@ -167,10 +165,8 @@ $(document).ready(function () {
         if (!map.hasLayer(polygon1)) {
             polygon1 = L.polygon(latlngs, {color: 'red'}).addTo(map)
             polygon1.on('click', function() {
-            console.log(map.hasLayer(polygon1))
             polygon1.remove();
             $("#process_id").val(parseInt($("[name = 'process_id']").val()) - 1);
-            console.log(map.hasLayer(polygon1))
             })
         }
         $("#process_id").val(parseInt($("[name = 'process_id']").val()) + 1);
@@ -189,7 +185,6 @@ $(document).ready(function () {
       dataType: "json",
       cache: false,
       success: function (data) {
-        console.log(data)
         $("#modal-content").empty()
         $("#modal-content").append(`
           <p> The similarity between the two areas is ` + data['similarity'] + ` </p>
@@ -197,7 +192,6 @@ $(document).ready(function () {
         $('#view_task_modal').modal('show');
         $('#view_task_modal').click(function (event) 
         {
-          console.log(event.currentTarget)
           if($(event.target).closest("#modal_body").length === 0) {
             $('#view_task_modal').modal('hide');
           }     
