@@ -147,3 +147,5 @@ if os.name == 'nt':
 ```
 Finished! Now continue with the regular setup of django.
 Note: If there are still issues, it's possible you might need to install GDAL on windows. As there aren't any binaries available on the GDAL website and you have to build it yourself. The easiest way to install it is by using the network installer for OSGeo4W, just do an express installation but make sure to select GDAL as an additional package.
+
+!
